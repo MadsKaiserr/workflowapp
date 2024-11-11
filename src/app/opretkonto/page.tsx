@@ -2,8 +2,6 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useActionState, useEffect, useState } from "react";
-import { createUserWithEmailAndPassword, validatePassword, GoogleAuthProvider, signInWithPopup, sendPasswordResetEmail, updateProfile } from "firebase/auth";
-import { useRouter } from 'next/navigation'
 import { signup } from "../lib"
 
 import dotWave from '../assets/dotwave.png';
@@ -14,7 +12,7 @@ export default function Opretkonto() {
     const [loading, setLoading] = useState(false)
     const [showPass, setShowPass] = useState(false)
     const [fejl, setFejl] = useState(false)
-    const [success, setSuccess] = useState("");
+    const [success] = useState("");
 
     const [formValues, setFormValues] = useState({
         name: '',
@@ -22,7 +20,7 @@ export default function Opretkonto() {
         password: ''
     });
 
-    const handleInputChange = (e) => {
+    const handleInputChange = (e: any) => {
         const { name, value } = e.target;
         setFormValues({
             ...formValues,

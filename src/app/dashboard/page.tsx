@@ -1,13 +1,22 @@
 "use client"
 import Link from "next/link";
-import Image from "next/image";
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 
 import Sidebar from '../components/sidebar';
 
+type Tip = {
+  tip__navn: string;
+  tip__beskrivelse: string;
+  tip__list: Array<{
+    element__navn: string;
+    element__url: string;
+    element__complete: boolean;
+  }>;
+};
+
 export default function Dashboard() {
 
-  const [tips, setTips] = useState([])
+  const [tips] = useState<Tip[]>([])
 
   return (
     <>

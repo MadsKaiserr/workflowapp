@@ -1,8 +1,6 @@
 "use client"
 import Link from "next/link";
-import Image from "next/image";
-import { signOut, onAuthStateChanged } from "firebase/auth";
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { logout } from "../../lib"
 
 export default function Profil() {
@@ -32,7 +30,7 @@ export default function Profil() {
                 <div className="header__cta__profil__dropdown__container">
                     <Link href="/dashboard" className="header__cta__profil__dropdown__element">Dashboard</Link>
                     <Link href="/dashboard/profil" className="header__cta__profil__dropdown__element">Profilindstillinger</Link>
-                    <p className="header__cta__profil__dropdown__element">Kontoindstillinger</p>
+                    <Link href="/dashboard/konto" className="header__cta__profil__dropdown__element">Kontoindstillinger</Link>
                     <button className="header__cta__profil__dropdown__element" onClick={() => logout()}>Log ud</button>
                 </div>
             </div>}

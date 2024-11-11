@@ -2,8 +2,6 @@ import Link from "next/link";
 import Image from "next/image";
 
 import dotWave from '../assets/dotwave.png';
-import dotWaveGreen from '../assets/dotwavegreen.png';
-import stripe from '../assets/stripe.png';
 
 export default function Home() {
   return (

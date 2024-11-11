@@ -1,6 +1,6 @@
 "use client"
 import Link from "next/link";
-import { useState, useEffect, use } from 'react'
+import { useState, useEffect } from 'react'
 import { usePathname } from 'next/navigation'
 import { getKategorier } from "../assets/lister/lister";
 
@@ -10,20 +10,20 @@ export default function Kategorier() {
 
     const [slided, SetSlided] = useState(false);
 
-    function slideKategorier(side) {
+    function slideKategorier(side: string) {
         if (side == "right") {
-            document.getElementById("kategorierWrapper").style.transform = "translateX(-70%)";
-            document.getElementById("kategorierSlider").style.justifyContent = "flex-start";
-            document.getElementById("kategorierSlider").style.left = "0";
-            document.getElementById("kategorierSlider").style.right = "auto";
-            document.getElementById("kategorierSlider").style.background = "linear-gradient(90deg, rgba(255,255,255,1) 0%, rgba(255,255,255,1) 20%, rgba(255,255,255,0) 100%)";
+            document.getElementById("kategorierWrapper")!.style.transform = "translateX(-70%)";
+            document.getElementById("kategorierSlider")!.style.justifyContent = "flex-start";
+            document.getElementById("kategorierSlider")!.style.left = "0";
+            document.getElementById("kategorierSlider")!.style.right = "auto";
+            document.getElementById("kategorierSlider")!.style.background = "linear-gradient(90deg, rgba(255,255,255,1) 0%, rgba(255,255,255,1) 20%, rgba(255,255,255,0) 100%)";
             SetSlided(true);
         } else {
-            document.getElementById("kategorierWrapper").style.transform = "translateX(0%)";
-            document.getElementById("kategorierSlider").style.justifyContent = "flex-end";
-            document.getElementById("kategorierSlider").style.left = "auto";
-            document.getElementById("kategorierSlider").style.right = "0";
-            document.getElementById("kategorierSlider").style.background = "linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,1) 80%, rgba(255,255,255,1) 100%)";
+            document.getElementById("kategorierWrapper")!.style.transform = "translateX(0%)";
+            document.getElementById("kategorierSlider")!.style.justifyContent = "flex-end";
+            document.getElementById("kategorierSlider")!.style.left = "auto";
+            document.getElementById("kategorierSlider")!.style.right = "0";
+            document.getElementById("kategorierSlider")!.style.background = "linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,1) 80%, rgba(255,255,255,1) 100%)";
             SetSlided(false);
         }
     }
@@ -32,7 +32,7 @@ export default function Kategorier() {
         setCurrentKategori(pathname.replace("/freelance-kategorier/", ''))
     })
 
-    const [kategoriList, setKategoriList] = useState(getKategorier())
+    const [kategoriList] = useState(getKategorier())
     const [currentKategori, setCurrentKategori] = useState("")
 
     return (

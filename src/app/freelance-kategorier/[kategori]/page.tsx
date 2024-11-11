@@ -9,6 +9,65 @@ import { getFreelancers } from "../../lib"
 import dotWave from '../../assets/dotwave.png';
 import profilBillede from '../../assets/madskaiser.jpg';
 
+type Filter = {
+    filter__navn: string;
+    filter__active: boolean;
+    filter__sektioner: Array<{
+      sektion__navn: string;
+      sektion__list: Array<{
+        list__id: string;
+        list__navn: string;
+        list__parent: string;
+        list__chosen: boolean;
+      }>;
+    }>;
+};
+
+type SelectedFilter = {
+    access: {
+      filterNavn: string;
+      sektionNavn: string;
+      filterIndex: number;
+      sektionIndex: number;
+      itemIndex: number;
+    };
+    [key: string]: any;
+};
+
+type Freelancer = {
+    freelanceInformation: {
+      freelance__url: string;
+      freelance__profile: {
+        profile__branche: string;
+        profile__type: string;
+        profile__tags: {
+          tag__id: string;
+          tag_color: string;
+          tag__name: string;
+          tag__description: string;
+        }[];
+      };
+      freelance__reviews: {
+        reviews__rating: number;
+        reviews__data: { length: number };
+      };
+      freelance__overskrift: string;
+      freelance__erfaring: {
+        erfaring__tid: string;
+      };
+    };
+    userInformation: {
+      user__email: string;
+      user__name: string;
+      user__location: string;
+    };
+};
+
+type FilterItem = {
+    list__id: string;
+    [key: string]: any;
+};
+
 export default function Home() {
     const searchParams  = useSearchParams()
     const pathname = usePathname()
@@ -16,20 +75,23 @@ export default function Home() {
 
     const [loading, setLoading] = useState(true)
 
-    const [kategorier, setKategorier] = useState(getKategorier())
-    const [currentKategori, setCurrentKategori] =  useState(decodeURIComponent(pathname.substring(22).replace("-", " ")))
+    const [kategorier] = useState(getKategorier())
+    const [currentKategori] =  useState(decodeURIComponent(pathname.substring(22).replace("-", " ")))
 
     const [isHovedKategori, setIsHovedKategori] = useState(true)
     const [harUnderKategorier, setHarUnderKategorier] = useState(false)
 
-    const [freelancers, setFreelancers] = useState([])
+    const [freelancers, setFreelancers] = useState<Freelancer[]>([]);
 
-    async function handleFreelancers(filters) {
+    async function handleFreelancers(filters: { filter: any; items: any[]; }[]) {
         if (currentKategori && currentKategori !== "") {
-            const freelancere = await getFreelancers(currentKategori.toLowerCase(), filters)
-            if (freelancere) {
+            const freelancere: any = await getFreelancers(currentKategori.toLowerCase(), filters)
+            if (freelancere.length > 0) {
                 setFreelancers(freelancere)
                 setLoading(false)
+            } else {
+                setLoading(false)
+                setFreelancers([])
             }
         }
     }
@@ -40,7 +102,7 @@ export default function Home() {
 
     useEffect(() => {
         if (kategorier.length >= 1 && kategorier[kategorier.findIndex((item) => item.navn.toLowerCase() == currentKategori.toLowerCase())].underkategorier) {
-            if (kategorier[kategorier.findIndex((item) => item.navn.toLowerCase() == currentKategori.toLowerCase())].underkategorier.length >= 1) {
+            if (kategorier[kategorier.findIndex((item) => item.navn.toLowerCase() == currentKategori.toLowerCase())].underkategorier!.length >= 1) {
                 setHarUnderKategorier(true)
             }
         }
@@ -48,36 +110,6 @@ export default function Home() {
         if (searchParams.get("kategori")) {
             setIsHovedKategori(false)
         }
-
-        /* if (searchParams.get("kategori")) {
-            setIsHovedKategori(false)
-            const getFreelancers = async () => {
-                const q = query(collection(db, "users"), where("accountInformation.account__type", "==", "freelancer"), where("freelanceInformation.freelance__branche", "==", searchParams.get("kategori")));
-                const querySnapshot = await getDocs(q);
-    
-                const freelancersArray = []
-                querySnapshot.forEach((doc) => {
-                    const freelancerData = {...doc.data()}
-                    freelancersArray.push(freelancerData)
-                });
-                setFreelancers(freelancersArray)
-            }
-            getFreelancers()
-        } else {
-            setIsHovedKategori(true)
-            const getFreelancers = async () => {
-                const q = query(collection(db, "users"), where("accountInformation.account__type", "==", "freelancer"));
-                const querySnapshot = await getDocs(q);
-    
-                const freelancersArray = []
-                querySnapshot.forEach((doc) => {
-                    const freelancerData = {...doc.data()}
-                    freelancersArray.push(freelancerData)
-                });
-                setFreelancers(freelancersArray)
-            }
-            getFreelancers()
-        } */
     }, [])
 
 
@@ -90,7 +122,7 @@ export default function Home() {
 
             const filterNavn = filtre[filterIndex].filter__navn
 
-            for (var i in value.split(",")) {
+            for (const i in value.split(",")) {
                 const itemIndex = filtre[filterIndex].filter__sektioner[sektionIndex].sektion__list.findIndex((list) => list.list__navn == value[i])
 
                 const item = {
@@ -120,27 +152,34 @@ export default function Home() {
         })
     }, []) */
 
-    const [filtre, setFiltre] = useState([])
-    const [selectedFilters, setSelectedFilters] = useState([])
+    const [filtre, setFiltre] = useState<Filter[]>([]);
+    const [selectedFilters, setSelectedFilters] = useState<SelectedFilter[]>([]);
 
     useEffect(() => {
-        if (getFilters().findIndex((item) => item.navn.toLowerCase() == currentKategori.toLowerCase()) >= 0) {
-            setFiltre(getFilters()[getFilters().findIndex((item) => item.navn.toLowerCase() == currentKategori.toLowerCase())].filtre)
+        const filtre = getFilters()
+        const currentKategoriIndex = filtre.findIndex((item) => item.navn.toLowerCase() == currentKategori.toLowerCase())
+
+        if (currentKategoriIndex >= 0) {
+            const kategoriFiltrer = filtre[currentKategoriIndex].filtre
+            setFiltre(kategoriFiltrer)
         }
     }, [])
 
-    function selectFilter(item, filterNavn: string, sektionNavn: string, filterIndex: number, sektionIndex: number, itemIndex: number) {
+    function selectFilter(item: FilterItem, filterNavn: string, sektionNavn: string, filterIndex: number, sektionIndex: number, itemIndex: number) {
         if (!filtre[filterIndex].filter__sektioner[sektionIndex].sektion__list[itemIndex].list__chosen) {
-            selectedFilters.push({
-                ...item, 
-                access: {
-                    filterNavn: filterNavn,
-                    sektionNavn: sektionNavn,
-                    filterIndex: filterIndex,
-                    sektionIndex: sektionIndex,
-                    itemIndex: itemIndex
-                }
-            })
+            setSelectedFilters(prevFilters => [
+                ...prevFilters,
+                {
+                    ...item,
+                    access: {
+                        filterNavn: filterNavn,
+                        sektionNavn: sektionNavn,
+                        filterIndex: filterIndex,
+                        sektionIndex: sektionIndex,
+                        itemIndex: itemIndex,
+                    },
+                },
+            ]);
 
             filtre[filterIndex].filter__sektioner[sektionIndex].sektion__list[itemIndex].list__chosen = true
             if (document.getElementById(sektionNavn + "-" + itemIndex)) {
@@ -156,7 +195,7 @@ export default function Home() {
         }
     }
 
-    function removeFilter(item, filterNavn: string, sektionNavn: string, filterIndex: number, sektionIndex: number, itemIndex: number) {
+    function removeFilter(item: SelectedFilter, filterNavn: string, sektionNavn: string, filterIndex: number, sektionIndex: number, itemIndex: number) {
         selectedFilters.splice(selectedFilters.findIndex((findItem) => findItem.list__id == item.list__id), 1)
 
         filtre[filterIndex].filter__sektioner[sektionIndex].sektion__list[itemIndex].list__chosen = false
@@ -167,27 +206,27 @@ export default function Home() {
 
     function toggleFilter(filterNavn: string, filterIndex: number) {
         if (filtre[filterIndex].filter__active) {
-            document.getElementById(filterNavn + "-" + filterIndex + "-dropdown").style.display = "none"
+            document.getElementById(filterNavn + "-" + filterIndex + "-dropdown")!.style.display = "none"
             filtre[filterIndex].filter__active = false
         } else {
-            document.getElementById(filterNavn + "-" + filterIndex + "-dropdown").style.display = "block"
+            document.getElementById(filterNavn + "-" + filterIndex + "-dropdown")!.style.display = "block"
             filtre[filterIndex].filter__active = true
         }
     }
 
     function closeFilter(filterNavn: string, filterIndex: number) {
-        document.getElementById(filterNavn + "-" + filterIndex + "-dropdown").style.display = "none"
+        document.getElementById(filterNavn + "-" + filterIndex + "-dropdown")!.style.display = "none"
         filtre[filterIndex].filter__active = false
     }
 
     function removeSelected(filterNavn: string, filterIndex: number) {
-        for (var i in selectedFilters) {
+        for (const i in selectedFilters) {
             if (selectedFilters[i].list__parent == filterNavn) {
                 selectedFilters.splice(Number(i), 1)
             }
 
-            for (var k in filtre[filterIndex].filter__sektioner) {
-                for (var l in filtre[filterIndex].filter__sektioner[k].sektion__list) {
+            for (const k in filtre[filterIndex].filter__sektioner) {
+                for (const l in filtre[filterIndex].filter__sektioner[k].sektion__list) {
                     filtre[filterIndex].filter__sektioner[k].sektion__list[l].list__chosen = false
 
                     if (document.getElementById(filtre[filterIndex].filter__sektioner[k].sektion__navn + "-" + l)) {
@@ -200,11 +239,11 @@ export default function Home() {
 
     function anvendFilters(filterNavn: string, filterIndex: number) {
         setLoading(true)
-        var query = "/freelance-kategorier/" + currentKategori + "?"
+        let query = "/freelance-kategorier/" + currentKategori + "?"
 
-        var activeFiltersArray = []
+        const activeFiltersArray = []
 
-        for (var i in selectedFilters) {
+        for (const i in selectedFilters) {
             if (activeFiltersArray.findIndex((item) => item.filter == selectedFilters[i].list__parent) < 0) {
                 activeFiltersArray.push({
                     filter: selectedFilters[i].list__parent,
@@ -215,9 +254,9 @@ export default function Home() {
             }
         }
         
-        for (var i in activeFiltersArray) {
-            var filterQuery = "&" + activeFiltersArray[i].filter.replace(" ", "-") + "="
-            for (var k in activeFiltersArray[i].items) {
+        for (const i in activeFiltersArray) {
+            let filterQuery = "&" + activeFiltersArray[i].filter.replace(" ", "-") + "="
+            for (const k in activeFiltersArray[i].items) {
                 if (Number(k) >= 1) {
                     filterQuery = filterQuery + "," + activeFiltersArray[i].items[k].replace(" ", "-")
                 } else {
@@ -231,7 +270,7 @@ export default function Home() {
         closeFilter(filterNavn, filterIndex)
     }
 
-    function removeFilterHandler(filter) {
+    function removeFilterHandler(filter: SelectedFilter) {
         removeFilter(filter, filter.access.filterNavn, filter.access.sektionNavn, filter.access.filterIndex, filter.access.sektionIndex, filter.access.itemIndex)
         anvendFilters(filter.access.filterNavn, filter.access.filterIndex)
     }
@@ -266,7 +305,7 @@ export default function Home() {
                     <Image src={dotWave} className="home__hero__background__image" alt="" width={1200} />
                 </div>
             </div>
-            {isHovedKategori && harUnderKategorier && <>
+            {isHovedKategori && harUnderKategorier && kategorier && <>
                 {/* <h2 className="cards__heading">Populære underkategorier</h2> */}
                 <div className="cards__container">
                     <div className="cards__wrapper">
@@ -275,12 +314,12 @@ export default function Home() {
                                 <svg xmlns="http://www.w3.org/2000/svg" className="kategorier__slider__icon__left kategorier__slider__icon__off" viewBox="0 0 24 24">
                                     <path d="m10.279,18.342l-.707-.707,5.281-5.281c.094-.095.146-.22.146-.354s-.052-.259-.146-.354l-5.281-5.281.707-.707,5.281,5.281c.283.283.439.66.439,1.061s-.156.777-.439,1.061l-5.281,5.281Z"/>
                                 </svg>
-                                <svg xmlns="http://www.w3.org/2000/svg" onClick={() => slideKategorier("right")} className="kategorier__slider__icon" viewBox="0 0 24 24">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="kategorier__slider__icon" viewBox="0 0 24 24">
                                     <path d="m10.279,18.342l-.707-.707,5.281-5.281c.094-.095.146-.22.146-.354s-.052-.259-.146-.354l-5.281-5.281.707-.707,5.281,5.281c.283.283.439.66.439,1.061s-.156.777-.439,1.061l-5.281,5.281Z"/>
                                 </svg>
                             </>
                         </div>
-                        {kategorier[kategorier.findIndex((item) => item.navn.toLowerCase() == currentKategori.toLowerCase())].underkategorier.map((underkategori) => {
+                        {kategorier[kategorier.findIndex((item) => item.navn.toLowerCase() == currentKategori.toLowerCase())].underkategorier!.map((underkategori) => {
                             return (<Link key={underkategori.navn} href={"/freelance-kategorier/" + currentKategori + "?kategori=" + underkategori.navn.replace(" ", "-")} className="cards__element">
                                 <div className="cards__element__icon__container">
                                     {underkategori.svg}
@@ -356,7 +395,7 @@ export default function Home() {
                 {loading ? <div className="filter__loading__container">
                     <div className="lds-ring"><div></div><div></div><div></div><div></div></div>
                 </div> : <>
-                    {freelancers.length >= 1 ? <div className="salecard__section">
+                    {freelancers.length > 0 ? <div className="salecard__section">
                         {freelancers.map((freelancer) => {
                             return (
                                 <Link href={"/freelancer/profil?id=" + freelancer.freelanceInformation.freelance__url} className="salecard__section__element" key={freelancer.userInformation.user__email}>
@@ -369,39 +408,34 @@ export default function Home() {
                                                 </div>
                                                 <div className="salecard__element__indhold__seller__indhold">
                                                     <p className="salecard__element__indhold__seller__heading">{freelancer.userInformation.user__name}</p>
-                                                    <p className="salecard__element__indhold__seller__p">{freelancer.freelanceInformation.freelance__branche}</p>
+                                                    <p className="salecard__element__indhold__seller__p">{freelancer.freelanceInformation.freelance__profile.profile__branche}</p>
                                                 </div>
                                             </div>
                                             <div className="salecard__element__indhold__seller__reviews">
                                                 <svg xmlns="http://www.w3.org/2000/svg" className="salecard__element__indhold__seller__reviews__icon" viewBox="0 0 16 16">
                                                     <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
                                                 </svg>
-                                                <p className="filter__dropdown__section__boxtick__element__p">4,8 <span>({Math.round(Math.random() * 100)})</span></p>
+                                                <p className="filter__dropdown__section__boxtick__element__p">{freelancer.freelanceInformation.freelance__reviews.reviews__rating} <span>({freelancer.freelanceInformation.freelance__reviews.reviews__data.length})</span></p>
                                             </div>
                                         </div>
                                         <p className="salecard__element__indhold__heading">{freelancer.freelanceInformation.freelance__overskrift}</p>
-                                        <p className="salecard__element__indhold__p">Ekspert - Fast pris - Est. budget: 8000 kr.</p>
+                                        <p className="salecard__element__indhold__p">{freelancer.freelanceInformation.freelance__erfaring.erfaring__tid} - {freelancer.freelanceInformation.freelance__profile.profile__type} - {freelancer.userInformation.user__location}</p>
                                         <div className="profil__tags__wrapper">
-                                            <div className="profil__tag__container profil__verified__container">
-                                                <svg xmlns="http://www.w3.org/2000/svg" className="profil__verified__icon" viewBox="0 0 16 16">
-                                                    <path d="M10.067.87a2.89 2.89 0 0 0-4.134 0l-.622.638-.89-.011a2.89 2.89 0 0 0-2.924 2.924l.01.89-.636.622a2.89 2.89 0 0 0 0 4.134l.637.622-.011.89a2.89 2.89 0 0 0 2.924 2.924l.89-.01.622.636a2.89 2.89 0 0 0 4.134 0l.622-.637.89.011a2.89 2.89 0 0 0 2.924-2.924l-.01-.89.636-.622a2.89 2.89 0 0 0 0-4.134l-.637-.622.011-.89a2.89 2.89 0 0 0-2.924-2.924l-.89.01zm.287 5.984-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7 8.793l2.646-2.647a.5.5 0 0 1 .708.708"/>
-                                                </svg>
-                                                <p className="profil__verified__heading">Workflow Verificeret</p>
-                                                <div className="profil__tag__popup">
-                                                    <div className="profil__tag__popup__arrow"></div>
-                                                    <p className="profil__tag__popup__p">Mads Kaiser er blevet verificeret af Workflow administrationen. Freelanceren er derfor af høj kvalitet og troværdighed.</p>
-                                                </div>
-                                            </div>
-                                            <div className="profil__tag__container profil__top__container">
-                                                <svg xmlns="http://www.w3.org/2000/svg" className="profil__verified__icon" viewBox="0 0 16 16">
-                                                    <path fillRule="evenodd" d="M2 15.5V2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.74.439L8 13.069l-5.26 2.87A.5.5 0 0 1 2 15.5M8.16 4.1a.178.178 0 0 0-.32 0l-.634 1.285a.18.18 0 0 1-.134.098l-1.42.206a.178.178 0 0 0-.098.303L6.58 6.993c.042.041.061.1.051.158L6.39 8.565a.178.178 0 0 0 .258.187l1.27-.668a.18.18 0 0 1 .165 0l1.27.668a.178.178 0 0 0 .257-.187L9.368 7.15a.18.18 0 0 1 .05-.158l1.028-1.001a.178.178 0 0 0-.098-.303l-1.42-.206a.18.18 0 0 1-.134-.098z"/>
-                                                </svg>
-                                                <p className="profil__verified__heading">Top Sælger</p>
-                                                <div className="profil__tag__popup">
-                                                    <div className="profil__tag__popup__arrow"></div>
-                                                    <p className="profil__tag__popup__p">Mads Kaiser er førende indenfor sine kategorier. Vedkommende har solgt til mange, og har mange glade kunder.</p>
-                                                </div>
-                                            </div>
+                                            {freelancer.freelanceInformation.freelance__profile.profile__tags.map((tag) => {
+                                                return (<div key={tag.tag__id} className="profil__tag__container" style={{backgroundColor: tag.tag_color}}>
+                                                    {tag.tag__id == "workflowVerified" && <svg xmlns="http://www.w3.org/2000/svg" className="profil__verified__icon" viewBox="0 0 16 16">
+                                                        <path d="M10.067.87a2.89 2.89 0 0 0-4.134 0l-.622.638-.89-.011a2.89 2.89 0 0 0-2.924 2.924l.01.89-.636.622a2.89 2.89 0 0 0 0 4.134l.637.622-.011.89a2.89 2.89 0 0 0 2.924 2.924l.89-.01.622.636a2.89 2.89 0 0 0 4.134 0l.622-.637.89.011a2.89 2.89 0 0 0 2.924-2.924l-.01-.89.636-.622a2.89 2.89 0 0 0 0-4.134l-.637-.622.011-.89a2.89 2.89 0 0 0-2.924-2.924l-.89.01zm.287 5.984-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7 8.793l2.646-2.647a.5.5 0 0 1 .708.708"/>
+                                                    </svg>}
+                                                    {tag.tag__id == "topSeller" && <svg xmlns="http://www.w3.org/2000/svg" className="profil__verified__icon" viewBox="0 0 16 16">
+                                                        <path fillRule="evenodd" d="M2 15.5V2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.74.439L8 13.069l-5.26 2.87A.5.5 0 0 1 2 15.5M8.16 4.1a.178.178 0 0 0-.32 0l-.634 1.285a.18.18 0 0 1-.134.098l-1.42.206a.178.178 0 0 0-.098.303L6.58 6.993c.042.041.061.1.051.158L6.39 8.565a.178.178 0 0 0 .258.187l1.27-.668a.18.18 0 0 1 .165 0l1.27.668a.178.178 0 0 0 .257-.187L9.368 7.15a.18.18 0 0 1 .05-.158l1.028-1.001a.178.178 0 0 0-.098-.303l-1.42-.206a.18.18 0 0 1-.134-.098z"/>
+                                                    </svg>}
+                                                    <p className="profil__verified__heading">{tag.tag__name}</p>
+                                                    <div className="profil__tag__popup">
+                                                        <div className="profil__tag__popup__arrow"></div>
+                                                        <p className="profil__tag__popup__p">{freelancer.userInformation.user__name} {tag.tag__description}</p>
+                                                    </div>
+                                                </div>)
+                                            })}
                                         </div>
                                     </div>
                                 </Link>

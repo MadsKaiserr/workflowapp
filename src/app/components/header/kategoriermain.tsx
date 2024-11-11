@@ -14,7 +14,7 @@ export default function Header() {
         } else {
             setUdenKategorier(false)
         }
-    })
+    }, [pathname])
 
     return (<>
         {!udenKategorier && <div className="kategorier__main">

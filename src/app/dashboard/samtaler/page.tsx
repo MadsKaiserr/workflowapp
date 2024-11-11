@@ -1,33 +1,31 @@
 "use client"
-import Link from "next/link";
-import Image from "next/image";
-import { useState, useEffect } from 'react'
-import { auth, db } from "@/app/firebase/config"
-import { collection, query, where, onSnapshot, setDoc, doc, addDoc, getDocs } from "firebase/firestore";
+/* import { useState, useEffect } from 'react'
+import { db } from "@/app/firebase/config"
+import { collection, query, where, setDoc, doc, getDocs } from "firebase/firestore"; */
 
 import Sidebar from '../../components/sidebar';
 
 export default function Samtaler() {
 
-    const [loading, setLoading] = useState(false)
+    /* const [loading, setLoading] = useState(false)
 
     const [email, setEmail] = useState("")
     const [nyBesked, setNyBesked] = useState("")
     const [samtaler, setSamtaler] = useState([])
-    const [currentSamtale, setCurrentSamtale] = useState("")
+    const [currentSamtale, setCurrentSamtale] = useState("") */
 
-    useEffect(() => {
+    /* useEffect(() => {
         if (document.getElementById(currentSamtale)) {
             document.getElementById(currentSamtale)?.classList.add("chat__list__element__active")
         }
-    }, [currentSamtale])
+    }, [currentSamtale]) */
 
-    function sendBesked() {
+    /* function sendBesked() {
         setLoading(true)
         if (nyBesked !== "") {
             const beskedDBUpdate = async () => {
-                var updateSamtaleMap = samtaler[samtaler.findIndex(item => item.id == currentSamtale)]
-                var samtaleModtager = samtaler[samtaler.findIndex(item => item.id == currentSamtale)].samtale__medlemmer[0]
+                const updateSamtaleMap = samtaler[samtaler.findIndex(item => item.id == currentSamtale)]
+                let samtaleModtager = samtaler[samtaler.findIndex(item => item.id == currentSamtale)].samtale__medlemmer[0]
                 if (samtaleModtager == email) {
                     samtaleModtager = samtaler[samtaler.findIndex(item => item.id == currentSamtale)].samtale__medlemmer[1]
                 }
@@ -40,10 +38,7 @@ export default function Samtaler() {
                         data__modtager: samtaleModtager
                     }
                 })
-
-                const beskedDoc = await setDoc(doc(db, "samtaler", currentSamtale), updateSamtaleMap)
-                
-                beskedDoc
+                await setDoc(doc(db, "samtaler", currentSamtale), updateSamtaleMap)
 
                 console.log("Besked sendt")
                 setLoading(false)
@@ -51,10 +46,8 @@ export default function Samtaler() {
             }
             beskedDBUpdate()
         }
-    }
+    } */
 
-    useEffect(() => {
-        setEmail(JSON.parse(localStorage.getItem("user")).userInformation.user__email)
 
         /* const q = query(collection(db, "samtaler"), where("testid", "==", "testtrue"));
         const unsubscribe = onSnapshot(q, (querySnapshot) => {
@@ -67,6 +60,9 @@ export default function Samtaler() {
             console.log("Alle beskeder", beskeder)
             setBeskederData(beskeder)
         }); */
+
+    /* useEffect(() => {
+        setEmail(JSON.parse(localStorage.getItem("user")).userInformation.user__email)
 
         const emailData = JSON.parse(localStorage.getItem("user")).userInformation.user__email
 
@@ -83,7 +79,7 @@ export default function Samtaler() {
             setSamtaler(samtaleArray)
         }
         getSamtaler()
-    }, [] )
+    }, [] ) */
 
     return (
         <>
@@ -96,7 +92,7 @@ export default function Samtaler() {
                     <p className="dashboard__content__p">Administrer dine samtaler fra potentielle kunder</p>
                     </div>
                 </div>
-                <div className="chat__container">
+                {/* <div className="chat__container">
                     <div className="chat__list__container">
                         {samtaler.map((samtale) => {
                             return (
@@ -137,11 +133,6 @@ export default function Samtaler() {
                                     );
                                 }) : <>Vælg en samtale</>}
                             </ul>
-                            {/* <div className="chat__wrapper__divider">
-                                <div className="chat__wrapper__divider__element"></div>
-                                <p className="chat__wrapper__divider__heading">I dag 18:01</p>
-                                <div className="chat__wrapper__divider__element"></div>
-                            </div> */}
                         </div>
                         <div className="chat__cta__container">
                             <input className="logind__form__element__input" placeholder="Skriv en besked" value={nyBesked} onChange={(e) => setNyBesked(e.target.value)} />
@@ -156,7 +147,7 @@ export default function Samtaler() {
                             </button>
                         </div>
                     </div>
-                </div>
+                </div> */}
             </div>
         </div>
         </>

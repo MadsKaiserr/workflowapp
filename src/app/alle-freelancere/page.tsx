@@ -1,5 +1,5 @@
 "use client"
-import Link from "next/link";
+/* import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
@@ -7,13 +7,12 @@ import { auth, db } from "@/app/firebase/config"
 import { getDocs, doc, query, collection, where } from "firebase/firestore";
 
 import dotWave from '../assets/dotwave.png';
-import profilBillede from '../assets/madskaiser.jpg';
+import profilBillede from '../assets/madskaiser.jpg'; */
 
 export default function AlleFreelancere() {
-    const searchParams  = useSearchParams()
-    const pathname = usePathname()
+    /* const searchParams  = useSearchParams() */
 
-    const [freelancers, setFreelancers] = useState([])
+    /* const [freelancers, setFreelancers] = useState([])
 
     useEffect(() => {
         const getFreelancers = async () => {
@@ -29,11 +28,11 @@ export default function AlleFreelancere() {
         }
         getFreelancers()
         console.log(searchParams.get("kategori"))
-    }, [])
+    }, []) */
 
     return (
         <>
-        <div className="priser__hero__container">
+        {/* <div className="priser__hero__container">
             <div className="priser__hero__indhold">
             <h1 className="home__hero__h1">Find din freelancer i <span className="home__hero__h1__span">alle freelancere</span> hos Workflow</h1>
             <p className="home__hero__p">Workflow forbinder danske virksomheder med de perfekte freelancere, så idéer kan blive til virkelighed.</p>
@@ -80,7 +79,7 @@ export default function AlleFreelancere() {
             </div> : <div className="salecard__section">
                 Der blev ikke fundet nogen freelancere, der matcher dine søgeresultater
             </div>}
-        </div>
+        </div> */}
         </>
     );
 }

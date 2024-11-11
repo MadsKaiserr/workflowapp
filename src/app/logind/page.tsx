@@ -2,7 +2,6 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useActionState, useEffect, useState } from "react";
-import { createUserWithEmailAndPassword, validatePassword, GoogleAuthProvider, signInWithPopup, sendPasswordResetEmail, updateProfile } from "firebase/auth";
 import { login } from "../lib"
 
 import dotWave from '../assets/dotwave.png';
@@ -20,7 +19,7 @@ export default function Logind() {
     });
 
     // Håndtering af ændringer i inputfelterne
-    const handleInputChange = (e) => {
+    const handleInputChange = (e: any) => {
         const { name, value } = e.target;
         setFormValues({
             ...formValues,

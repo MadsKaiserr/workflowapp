@@ -708,7 +708,6 @@ body {
 .home__hero__h1 {
   font-size: 82px;
   max-width: 1100px;
-  text-transform: capitalize;
   font-family: "p22-mackinac-pro";
   font-weight: 400;
 }
@@ -1142,6 +1141,7 @@ body {
   border: 0;
   position: absolute;
   width: 100%;
+  text-transform: capitalize;
   height: 100%;
   left: 0;
   border-radius: 10px;
@@ -1408,6 +1408,7 @@ select {
   position: relative;
   text-align: left;
   z-index: 2;
+  transition: none;
 }
 
 .priser__wrapper {
@@ -1976,6 +1977,7 @@ select {
 .salecard__element__indhold__p {
   font-size: 16px;
   font-weight: 400;
+  text-transform: capitalize;
   padding-top: 10px;
 }
 
@@ -2142,17 +2144,35 @@ select {
   align-items: flex-start;
   justify-content: space-between;
   margin-bottom: 10px;
-  margin-top: 50px;
+  margin-top: 30px;
+}
+
+.profil__container {
+  padding: 0px 5%;
+  width: 100%;
+  position: relative;
+  max-width: 1650px;
+  margin: 0px auto;
+  margin-top: 150px;
 }
 
 .profil__hero__container {
-  padding: 50px 5%;
-  margin-top: 170px;
+  padding: 50px 0px;
   width: 100%;
   position: relative;
-  max-width: 2000px;
-  border-bottom: 1px solid rgba(var(--divider), 0.5);
-  overflow: hidden;
+  border-bottom: 1px solid rgba(var(--divider));
+  overflow-y: hidden;
+  overflow-x: visible;
+}
+
+.profil__indhold__container {
+  width: 100%;
+  padding: 50px 0px;
+  display: flex;
+  position: relative;
+  align-items: flex-start;
+  gap: 80px;
+  border-bottom: 1px solid rgba(var(--divider));
 }
 
 .profil__hero__container .home__hero__h1 {
@@ -2173,29 +2193,44 @@ select {
   gap: 5px;
 }
 
-.profil__location__icon {
-  width: 16px;
-  height: 16px;
+.profil__reviews__p {
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.profil__reviews__p span {
+  font-size: 16px;
+  font-weight: 500;
+  color: rgba(var(--primaryoff), 0.7);
+}
+
+.profil__reviews__icon {
+  width: 20px;
+  height: 20px;
   fill: rgba(var(--primary));
-  opacity: 0.8;
+}
+
+.profil__location__icon {
+  width: 15px;
+  height: 15px;
+  fill: rgba(var(--primary));
 }
 
 .profil__location__heading {
   font-size: 16px;
   color: rgba(var(--primary));
   font-weight: 500;
-  opacity: 0.9;
   text-transform: capitalize;
 }
 
 .profil__h1 {
   font-size: 42px;
-  max-width: 1100px;
-  text-transform: capitalize;
+  max-width: 80%;
   font-family: "p22-mackinac-pro";
-  font-weight: 600;
+  font-weight: 500;
   padding: 10px 0px;
   padding-top: 15px;
+  transition: none;
 }
 
 .profil__beskrivelse__p {
@@ -2205,16 +2240,9 @@ select {
   max-width: 1000px;
 }
 
-.profil__media__container {
-  width: 70%;
-  background-color: rgba(var(--background));
-  height: 700px;
-  overflow: hidden;
-  border-radius: 15px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: relative;
+.profil__content__container {
+  width: 65%;
+  min-height: 500px;
 }
 
 .profil__media__image {
@@ -2230,6 +2258,7 @@ select {
   position: absolute;
   right: 0;
   top: 80px;
+  transition: none;
 }
 
 .profil__cta__btns {
@@ -2261,20 +2290,14 @@ select {
   font-weight: 600;
 }
 
-.profil__indhold__container {
-  width: 100%;
-  padding: 50px 5%;
-  display: flex;
-  position: relative;
-  align-items: flex-start;
-  gap: 50px;
-  min-height: 2000px;
-}
-
 .profil__info__container {
-  width: 30%;
+  width: 35%;
   position: sticky;
   top: 120px;
+  border-radius: 20px;
+  padding: 10px 30px;
+  background-color: #fff;
+  filter: drop-shadow(0px 5px 10px rgba(var(--primary), 0.05));
 }
 
 .profil__info__wrapper .salecard__element__indhold__seller__image {
@@ -2331,7 +2354,7 @@ select {
 .profil__salecard__tags {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 13px;
 }
 
 .profil__info__description__container {
@@ -2345,6 +2368,10 @@ select {
 .profil__info__description__heading {
   font-size: 18px;
   font-weight: 600;
+}
+
+.profil__info__bulletpoints .profil__info__description__p {
+  text-transform: capitalize;
 }
 
 .profil__info__description__p {
@@ -2361,18 +2388,174 @@ select {
   width: 100%;
   border-top: 1px solid rgba(var(--divider));
   padding: 30px 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .profil__info__cta__btn {
   width: 100%;
   background-color: rgba(var(--color));
   border-radius: 50px;
-  padding: 18px 0px;
+  padding: 15px 0px;
   text-align: center;
   color: #fff;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
   border: 0px;
+  cursor: pointer;
+}
+
+.profil__info__cta__btn__outline {
+  border: 2px solid rgba(var(--color));
+  background-color: #fff;
+  color: rgba(var(--color));
+  font-weight: 600;
+}
+
+.textsection__container {
+  width: 100%;
+  padding: 100px 0px;
+  border-top: 1px solid rgba(var(--divider));
+  display: flex;
+  flex-direction: column;
+  gap: 50px;
+}
+
+.textsection__element__h1 {
+  font-size: 18px;
+  font-weight: 700;
+  padding-bottom: 10px;
+}
+
+.textsection__element__p {
+  font-size: 18px;
+  font-weight: 500;
+  max-width: 100%;
+  white-space: pre-wrap;
+}
+
+.anmeldelser__content {
+  width: 100%;
+  padding: 100px 0px;
+  border-top: 1px solid rgba(var(--divider));
+}
+
+.anmeldelser__header {
+  width: 100%;
+}
+
+.anmeldelser__header__stats {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  gap: 50px;
+}
+
+.anmeldelser__header__stats__overview {
+  width: 40%;
+}
+
+.anmeldelser__header__stats__content {
+  width: 60%;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.anmeldelser__header__stats__content__element {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+}
+
+.anmeldelser__header__stats__content__element__p {
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  width: 80px;
+  text-align: right;
+}
+
+.anmeldelser__header__stats__content__element__p__procent {
+  width: 40px;
+  text-align: left;
+}
+
+.anmeldelser__header__stats__content__element__line {
+  width: 100%;
+  border-radius: 50px;
+  height: 12px;
+  overflow: hidden;
+  background-color: rgba(var(--background));
+  margin-top: 2px;
+}
+
+.anmeldelser__header__stats__content__element__line__active {
+  height: 100%;
+  background-color: rgba(var(--color));
+}
+
+.anmeldelser__header__stats__overview__h1 {
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.anmeldelser__header__stats__overview__h1 span {
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(var(--primaryoff));
+}
+
+.anmeldelser__header__stats__overview__heading {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding-top: 15px;
+}
+
+.anmeldelser__header__stats__overview__heading__h1 {
+  font-size: 62px;
+  font-weight: 800;
+}
+
+.anmeldelser__header__stats__overview__heading__stars {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+
+.anmeldelser__header__stats__overview__heading__stars__element {
+  fill: rgba(var(--color));
+  width: 38px;
+  height: 38px;
+}
+
+.portfolio__container {
+  width: 100%;
+  padding-bottom: 100px;
+}
+
+.portfolio__selected {
+  width: 100%;
+  height: 500px;
+  border-radius: 20px;
+  background-color: rgba(var(--background));
+}
+
+.portfolio__miniatures__container {
+  display: flex;
+  gap: 15px;
+  padding-top: 15px;
+}
+
+.portfolio__miniatures__element {
+  height: 110px;
+  width: 180px;
+  background-color: rgba(var(--background));
+  border-radius: 10px;
   cursor: pointer;
 }
 
@@ -2384,6 +2567,7 @@ select {
   padding: 0px 5%;
   height: 100%;
   display: flex;
+  transition: none;
 }
 
 .dashboard__sidebar__heading {
@@ -2548,6 +2732,10 @@ select {
   padding-bottom: 10px;
 }
 
+.logind__form__element__textarea__big {
+  height: 250px !important;
+}
+
 .dashboard__save__container {
   border: 0;
   position: sticky;
@@ -2670,6 +2858,34 @@ select {
 .dashboard__tips__element__ul__li__icon__active {
   background-color: rgba(var(--color));
   fill: #fff;
+}
+
+.dashboard__notification {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background-color: rgba(var(--color));
+  padding: 10px 15px;
+  padding-right: 25px;
+  border-radius: 10px;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dashboard__notification__p {
+  font-size: 15px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.dashboard__notification__icon {
+  width: 26px;
+  height: 26px;
+  background-color: #fff;
+  fill: rgba(var(--color));
+  border-radius: 50px;
 }
 
 /* ##################### Chat ####################### */

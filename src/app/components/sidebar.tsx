@@ -16,6 +16,8 @@ export default function Dashboard() {
       setNavigationElement("profil")
     } else if (pathname.slice(-8) == "samtaler") {
       setNavigationElement("samtaler")
+    } else if (pathname.slice(-5) == "konto") {
+      setNavigationElement("konto")
     } else if (pathname.slice(-9) == "portfolio") {
       setNavigationElement("portfolio")
     }
@@ -26,21 +28,30 @@ export default function Dashboard() {
       document.getElementById("dashboard")?.classList.add("dashboard__sidebar__nav__element__active")
       document.getElementById("profil")?.classList.remove("dashboard__sidebar__nav__element__active")
       document.getElementById("portfolio")?.classList.remove("dashboard__sidebar__nav__element__active")
+      document.getElementById("konto")?.classList.remove("dashboard__sidebar__nav__element__active")
       document.getElementById("samtaler")?.classList.remove("dashboard__sidebar__nav__element__active")
     } else if (navigationElement == "profil") {
       document.getElementById("dashboard")?.classList.remove("dashboard__sidebar__nav__element__active")
       document.getElementById("profil")?.classList.add("dashboard__sidebar__nav__element__active")
       document.getElementById("portfolio")?.classList.remove("dashboard__sidebar__nav__element__active")
+      document.getElementById("konto")?.classList.remove("dashboard__sidebar__nav__element__active")
       document.getElementById("samtaler")?.classList.remove("dashboard__sidebar__nav__element__active")
     } else if (navigationElement == "portfolio") {
       document.getElementById("dashboard")?.classList.remove("dashboard__sidebar__nav__element__active")
       document.getElementById("profil")?.classList.remove("dashboard__sidebar__nav__element__active")
       document.getElementById("portfolio")?.classList.add("dashboard__sidebar__nav__element__active")
       document.getElementById("samtaler")?.classList.remove("dashboard__sidebar__nav__element__active")
+    } else if (navigationElement == "konto") {
+      document.getElementById("dashboard")?.classList.remove("dashboard__sidebar__nav__element__active")
+      document.getElementById("profil")?.classList.remove("dashboard__sidebar__nav__element__active")
+      document.getElementById("portfolio")?.classList.remove("dashboard__sidebar__nav__element__active")
+      document.getElementById("konto")?.classList.add("dashboard__sidebar__nav__element__active")
+      document.getElementById("samtaler")?.classList.remove("dashboard__sidebar__nav__element__active")
     } else if (navigationElement == "samtaler") {
       document.getElementById("dashboard")?.classList.remove("dashboard__sidebar__nav__element__active")
       document.getElementById("profil")?.classList.remove("dashboard__sidebar__nav__element__active")
       document.getElementById("portfolio")?.classList.remove("dashboard__sidebar__nav__element__active")
+      document.getElementById("konto")?.classList.remove("dashboard__sidebar__nav__element__active")
       document.getElementById("samtaler")?.classList.add("dashboard__sidebar__nav__element__active")
     }
   }, [navigationElement])
@@ -48,19 +59,19 @@ export default function Dashboard() {
   function showMenuClicked() {
     if (showMenu) {
       setShowMenu(false)
-      document.getElementById("menuChevron").style.transform = "rotate(180deg)";
+      document.getElementById("menuChevron")!.style.transform = "rotate(180deg)";
     } else {
       setShowMenu(true)
-      document.getElementById("menuChevron").style.transform = "rotate(0deg)";
+      document.getElementById("menuChevron")!.style.transform = "rotate(0deg)";
     }
   }
   function showSalgClicked() {
     if (showSalg) {
       setShowSalg(false)
-      document.getElementById("salgChevron").style.transform = "rotate(180deg)";
+      document.getElementById("salgChevron")!.style.transform = "rotate(180deg)";
     } else {
       setShowSalg(true)
-      document.getElementById("salgChevron").style.transform = "rotate(0deg)";
+      document.getElementById("salgChevron")!.style.transform = "rotate(0deg)";
     }
   }
 
@@ -68,7 +79,10 @@ export default function Dashboard() {
   
   async function getUserSession() {
     const user = await getUser()
-    setBrugerNavn(user.user.userInformation.user__name)
+    if (user) {
+      const userData: any = {...user}
+      setBrugerNavn(userData.user.userInformation.user__name)
+    }
   }
 
   useEffect(() => {
@@ -111,6 +125,14 @@ export default function Dashboard() {
                     <p className="dashboard__sidebar__nav__element__p">Min portefølje</p>
                 </div>
                 <div className="dashboard__sidebar__nav__element__status">4</div>
+              </Link>
+              <Link href="/dashboard/konto" className="dashboard__sidebar__nav__element" id="konto">
+                <div className="dashboard__sidebar__nav__element__info">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="dashboard__sidebar__nav__element__icon" viewBox="0 0 24 24">
+                      <path d="m21.298,13.885l-.451-.259c.102-.544.153-1.088.153-1.625s-.051-1.082-.153-1.625l.451-.26c1.434-.825,1.93-2.663,1.105-4.096-.399-.695-1.045-1.192-1.819-1.401-.773-.208-1.582-.103-2.277.295l-.45.259c-.841-.72-1.81-1.28-2.857-1.649v-.522c0-1.654-1.346-3-3-3s-3,1.346-3,3v.522c-1.047.37-2.016.929-2.857,1.649l-.45-.258c-.694-.4-1.503-.504-2.277-.296-.774.209-1.42.707-1.819,1.401-.825,1.434-.329,3.271,1.105,4.097l.451.259c-.102.544-.153,1.088-.153,1.625s.051,1.082.153,1.625l-.451.26c-1.434.825-1.93,2.663-1.105,4.096.399.695,1.045,1.192,1.819,1.401.773.21,1.583.104,2.277-.295l.45-.259c.841.72,1.81,1.28,2.857,1.649v.522c0,1.654,1.346,3,3,3s3-1.346,3-3v-.522c1.047-.37,2.016-.929,2.857-1.649l.45.258c.695.4,1.504.506,2.277.296.774-.209,1.42-.707,1.819-1.401.825-1.434.329-3.271-1.105-4.097Zm-2.556-3.744c.171.624.258,1.25.258,1.859s-.087,1.235-.258,1.859c-.121.439.071.905.466,1.132l1.093.628c.478.275.644.888.368,1.366-.133.231-.348.397-.606.467-.257.071-.527.035-.759-.099l-1.091-.627c-.396-.227-.895-.158-1.213.168-.889.908-2.012,1.557-3.25,1.876-.442.114-.75.512-.75.968v1.262c0,.551-.449,1-1,1s-1-.449-1-1v-1.262c0-.456-.309-.854-.75-.968-1.237-.319-2.361-.968-3.25-1.876-.193-.198-.453-.301-.715-.301-.17,0-.342.043-.498.133l-1.091.627c-.232.133-.503.168-.759.099-.258-.07-.473-.235-.606-.467-.275-.478-.109-1.09.369-1.365l1.093-.628c.395-.227.586-.693.466-1.132-.171-.624-.258-1.25-.258-1.859s.087-1.235.258-1.859c.121-.439-.071-.905-.466-1.132l-1.093-.628c-.478-.275-.644-.888-.368-1.366.133-.231.348-.397.606-.467.258-.069.528-.034.759.099l1.091.627c.396.228.895.158,1.213-.168.889-.908,2.012-1.557,3.25-1.876.442-.114.75-.512.75-.968v-1.262c0-.551.449-1,1-1s1,.449,1,1v1.262c0,.456.309.854.75.968,1.237.319,2.361.968,3.25,1.876.319.326.817.396,1.213.168l1.091-.627c.231-.134.5-.17.759-.099.258.07.473.235.606.467.275.478.109,1.09-.369,1.365l-1.093.628c-.395.227-.586.693-.466,1.132Zm-2.997,4.533c.368.412.333,1.044-.078,1.412-.191.171-.429.255-.667.255-.275,0-.548-.112-.746-.333-.574-.641-1.396-1.008-2.255-1.008s-1.681.368-2.255,1.008c-.368.411-1,.447-1.412.078-.412-.368-.446-1-.078-1.412.952-1.064,2.317-1.674,3.745-1.674s2.793.61,3.745,1.674Zm-6.245-5.174c0-1.381,1.119-2.5,2.5-2.5s2.5,1.119,2.5,2.5-1.119,2.5-2.5,2.5-2.5-1.119-2.5-2.5Z"/>
+                    </svg>
+                    <p className="dashboard__sidebar__nav__element__p">Kontoindstillinger</p>
+                </div>
               </Link>
           </>}
         </div>

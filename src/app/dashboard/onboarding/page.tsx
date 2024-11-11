@@ -1,9 +1,7 @@
 "use client"
-import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState } from 'react'
 import { opretUser } from "../../lib"
-import { useRouter } from "next/navigation";
 import { getDanskeByer, getKategorier } from '../../assets/lister/lister';
 
 import dotWave from '../../assets/dotwave.png';
@@ -16,11 +14,10 @@ import sideHustleUndraw from '../../assets/Undraws/Sidehustle.png';
 import ejerUndraw from '../../assets/Undraws/Ejer.png';
 
 export default function Onboarding() {
-    const router = useRouter()
 
     const [currentBranche, setCurrentBranche] = useState(0)
 
-    const [questions, setQuestions] = useState([
+    const [questions] = useState([
         {
             id: 0,
             type: "card",
@@ -155,103 +152,41 @@ export default function Onboarding() {
     const [currentQuestion, setCurrentQuestion] = useState(0)
     const [loading, setLoading] = useState(false)
 
-    const [chosenOption, setChosenOption] = useState("")
-    const [questionQuery, setQuestionQuery] = useState("")
-    const [queryList, setQueryList] = useState([])
-    const [dropdownActive, setDropdownActive] = useState(false)
-
-    useEffect(() => {
-        if (questions[currentQuestion].type == "dropdown" && questions[currentQuestion].tag == "by") {
-            if (questionQuery === "") {
-                setQueryList(questions[currentQuestion].list);
-            } else {
-                var dupli = questions[currentQuestion].list;
-                var newDupli = [];
-                for (var y in dupli) {
-                    if ((dupli[y].toLowerCase()).includes(questionQuery.toLowerCase()) || (dupli[y].toLowerCase()).includes(questionQuery.toLowerCase())) {
-                        newDupli.push(dupli[y]);
-                    }
-                }
-                setQueryList(newDupli);
-            }
-        } else if (questions[currentQuestion].type == "dropdown") {
-            if (questionQuery === "") {
-                setQueryList(questions[currentQuestion].list);
-            } else {
-                var dupli = questions[currentQuestion].list;
-                var newDupli = [];
-                for (var y in dupli) {
-                    if ((dupli[y].navn.toLowerCase()).includes(questionQuery.toLowerCase()) || (dupli[y].navn.toLowerCase()).includes(questionQuery.toLowerCase().replaceAll("ø", "o"))) {
-                        newDupli.push(dupli[y]);
-                    }
-                }
-                setQueryList(newDupli);
-            }
-        }
-    }, [questionQuery])
-
     useEffect(() => {
         if (currentQuestion == 5) {
             questions[5].list = getKategorier()[currentBranche].underkategorier || []
-        }
-        
-        if (queryList.length <= 0 && questionQuery == "") {
-            setQueryList(questions[currentQuestion].list);
         }
     }, [currentQuestion])
 
     useEffect(() => {
         for (const spg of questions) {
-            document.getElementById("q" + spg.id).style.display = "none"
+            document.getElementById("q" + spg.id)!.style.display = "none"
         }
-        document.getElementById("q" + currentQuestion).style.display = "flex"
+        document.getElementById("q" + currentQuestion)!.style.display = "flex"
     }, [currentQuestion])
 
-    useEffect(() => {
-        var dropdowns = []
-        for (var i in questions) {
-            if (questions[i].type == "dropdown") {
-                dropdowns.push(questions[i])
-            }
-        }
+    function chooseCard(questionId: number, svarId: number) {
+        const question = questions[questionId];
+        const svar = question.svar[svarId];
 
-        for (var d in dropdowns) {
-            if (document.getElementById(dropdowns[d].id + 'dropdown')) {
-                document.getElementById(dropdowns[d].id + 'dropdown').addEventListener('focus', function(){
-                    setDropdownActive(true)
-                });
-            }
-        }
-    }, [])
-
-    useEffect(() => {
-        if (questions[currentQuestion].type == "dropdown") {
-            questions[currentQuestion].svar = chosenOption
-            setQuestionQuery(chosenOption)
-            setDropdownActive(false)
-        }
-    }, [chosenOption])
-
-    function chooseCard(questionId, svarId) {
-        if (questions[questionId].svar[svarId].chosen == false) {
-            for (const spg of questions[questionId].svar) {
-                spg.chosen = false
-                document.getElementById("q" + questionId + "-" + "a" + spg.id)?.classList.remove("opretkonto__element__active")
+        if (typeof svar === 'object' && 'chosen' in svar && !svar.chosen) {
+            for (const spg of question.svar) {
+                if (typeof spg === 'object' && 'chosen' in spg) {
+                    spg.chosen = false;
+                    document.getElementById("q" + questionId + "-" + "a" + spg.id)?.classList.remove("opretkonto__element__active");
+                }
             }
 
-            questions[questionId].svar[svarId].chosen = true
-            document.getElementById("q" + questionId + "-" + "a" + svarId)?.classList.add("opretkonto__element__active")
+            svar.chosen = true;
+            document.getElementById("q" + questionId + "-" + "a" + svarId)?.classList.add("opretkonto__element__active");
         }
     }
 
     function nextQuestion() {
         setCurrentQuestion(currentQuestion + 1)
-        setQueryList([])
-        setQuestionQuery("")
-        setChosenOption("")
 
         if (currentQuestion + 1 == 5) {
-            setCurrentBranche(getKategorier().findIndex((item) => item.navn == chosenOption))
+            setCurrentBranche(getKategorier().findIndex((item) => item.navn == questions[currentQuestion].svar))
         }
     }
 
@@ -268,7 +203,7 @@ export default function Onboarding() {
                         <h1 className="home__hero__h1">{question.navn}</h1>
                         <p className="home__hero__p">{question.beskrivelse}</p>
                         <ul className="opretkonto__container">
-                            {question.svar.map((answer) => {
+                            {Array.isArray(question.svar) && question.svar.map((answer) => {
                                 return (<li key={"a" + answer.id} id={"q" + question.id + "-" + "a" + answer.id} className="opretkonto__element" onClick={() => chooseCard(question.id, answer.id)}>
                                     <div className="opretkonto__element__image__container">
                                         <Image src={answer.svg} alt="" height={170} className="opretkonto__element__svg" />
@@ -288,64 +223,25 @@ export default function Onboarding() {
                             </button>
                         </div>
                     </div>);
-                } else if (question.type == "dropdown" && question.tag == "by") {
+                } else if (question.type == "dropdown") {
                     return (<div key={"q" + question.id} id={"q" + question.id} className="question__container">
                         <h1 className="home__hero__h1">{question.navn}</h1>
                         <p className="home__hero__p">{question.beskrivelse}</p>
                         <div className="logind__form" style={{marginBottom: "50px"}}>
                             <div className="logind__form__element">
-                                <p className="logind__form__element__heading">{question.tag}</p>
-                                <div className="logind__form__multiple__container">
-                                    <div className={dropdownActive ? "logind__form__element__dropdown logind__form__element__dropdown__active" : "logind__form__element__dropdown"}>
-                                        <input className="logind__form__element__dropdown__input" autoComplete={"off"} id={question.id + "dropdown"} placeholder={"Vælg " + question.tag + "..."} value={questionQuery} onChange={(e) => setQuestionQuery(e.target.value)} />
-                                        <svg xmlns="http://www.w3.org/2000/svg" className="logind__form__element__input__icon" viewBox="0 0 16 16">
-                                            <path fillRule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708"/>
-                                        </svg>
-                                        {dropdownActive && question.id == currentQuestion && <div className="logind__form__element__dropdown__container">
-                                            {queryList.map((item) => {
-                                                return (<button className="logind__form__element__dropdown__element" key={"by" + item} onClick={() => {setChosenOption(item); setDropdownActive(false)}}>
-                                                    <p className="logind__form__element__dropdown__element__p">{item}</p>
-                                                </button>);
-                                            })}
-                                        </div>}
-                                    </div>
+                                <div className="logind__form__element__header">
+                                    <p className="logind__form__element__heading">{question.tag}</p>
                                 </div>
-                            </div>
-                        </div>
-                        <div className="login__cta__container">
-                            {!loading ? <>
-                                <button className="header__cta__btn__fill component__info__btn__fill login__cta__main" onClick={() => question.knapText == "Næste" ? nextQuestion() : handleOnboardingDone()}>
-                                    {question.knapText}
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="login__cta__main__icon" viewBox="0 0 24 24">
-                                        <path d="m10.279,18.342l-.707-.707,5.281-5.281c.094-.095.146-.22.146-.354s-.052-.259-.146-.354l-5.281-5.281.707-.707,5.281,5.281c.283.283.439.66.439,1.061s-.156.777-.439,1.061l-5.281,5.281Z"/>
-                                    </svg>
-                                </button>
-                            </> : <button className="header__cta__btn__fill component__info__btn__fill login__cta__main" style={{padding: "10px"}} onClick={() => question.knapText == "Næste" ? nextQuestion() : handleOnboardingDone()}>
-                                <div className="loader"></div>
-                            </button>}
-                        </div>
-                    </div>);
-                } else if (question.type == "dropdown"){
-                    return (<div key={"q" + question.id} id={"q" + question.id} className="question__container">
-                        <h1 className="home__hero__h1">{question.navn}</h1>
-                        <p className="home__hero__p">{question.beskrivelse}</p>
-                        <div className="logind__form" style={{marginBottom: "50px"}}>
-                            <div className="logind__form__element">
-                                <p className="logind__form__element__heading">{question.tag}</p>
                                 <div className="logind__form__multiple__container">
-                                    <div className={dropdownActive ? "logind__form__element__dropdown logind__form__element__dropdown__active" : "logind__form__element__dropdown"}>
-                                        <input className="logind__form__element__dropdown__input" autoComplete={"off"} id={question.id + "dropdown"} placeholder={"Vælg " + question.tag + "..."} value={questionQuery} onChange={(e) => setQuestionQuery(e.target.value)} />
-                                        <svg xmlns="http://www.w3.org/2000/svg" className="logind__form__element__input__icon" viewBox="0 0 16 16">
-                                            <path fillRule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708"/>
-                                        </svg>
-                                        {dropdownActive && question.id == currentQuestion && <div className="logind__form__element__dropdown__container">
-                                            {queryList.map((item) => {
-                                                return (<button className="logind__form__element__dropdown__element" key={item.navn} onClick={() => {setChosenOption(item.navn); setDropdownActive(false)}}>
-                                                    <p className="logind__form__element__dropdown__element__p">{item.navn}</p>
-                                                </button>);
-                                            })}
-                                        </div>}
-                                    </div>
+                                    <select className="logind__form__element__input" id="user.freelanceInformation.freelance__erfaring.erfaring__tid" onChange={(e) => questions[question.id].svar = e.target.value}>
+                                        <option value="">Vælg {question.tag}...</option>
+                                        {question.list!.map((item) => {
+                                            return (<option key={item.navn} value={item.navn}>{item.navn}</option>);
+                                        })}
+                                    </select>
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="logind__form__element__input__icon" viewBox="0 0 16 16">
+                                        <path fillRule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708"/>
+                                    </svg>
                                 </div>
                             </div>
                         </div>
