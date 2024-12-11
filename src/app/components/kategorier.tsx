@@ -58,10 +58,17 @@ export default function Kategorier() {
                 </div>
                 <div className="kategorier__wrapper" id="kategorierWrapper">
                     {currentKategori !== "" && kategoriList.map((kategori, index) => {
-                        return (<Link key={"kategori-" + index} href={"/freelance-kategorier/" + kategori.navn.replace(" ", "-")} className={currentKategori == kategori.navn.replace(" ", "-") ? "kategorier__element" : "kategorier__element kategorier__element__off"}>
-                            {kategori.svg}
-                            <p className="kategorier__element__p">{kategori.navn}</p>
-                        </Link>)
+                        if (kategori.navn == "Andet") {
+                            return (<Link key={"kategori-" + index} href={"/freelance-kategorier/" + kategori.navn.replace(" ", "-")} className={currentKategori == kategori.navn.replace(" ", "-") ? "kategorier__element kategorier__element__other" : "kategorier__element kategorier__element__other kategorier__element__off"}>
+                                {kategori.svg}
+                                <p className="kategorier__element__p">{kategori.navn}</p>
+                            </Link>)
+                        } else {
+                            return (<Link key={"kategori-" + index} href={"/freelance-kategorier/" + kategori.navn.replace(" ", "-")} className={currentKategori == kategori.navn.replace(" ", "-") ? "kategorier__element" : "kategorier__element kategorier__element__off"}>
+                                {kategori.svg}
+                                <p className="kategorier__element__p">{kategori.navn}</p>
+                            </Link>)
+                        }
                     })}
                 </div>
             </div>

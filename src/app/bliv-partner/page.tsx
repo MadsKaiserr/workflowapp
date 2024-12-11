@@ -6,6 +6,9 @@ import { useState } from 'react'
 import dotWave from '../assets/dotwave.png';
 import dotWaveGreen from '../assets/dotwavegreen.png';
 import stripe from '../assets/stripe.png';
+import freelancer from '../assets/Workflow/Freelancer.jpg';
+import kategori from '../assets/Workflow/kategori.jpg';
+import { globalConfig } from "../components/globalConfig";
 
 export default function Home() {
 
@@ -13,36 +16,21 @@ export default function Home() {
 
     return (
         <>
-        <div className="priser__hero__container">
-            <div className="priser__hero__indhold">
-            <h1 className="home__hero__h1">Tjen penge på dit <span className="home__hero__h1__span">freelance</span> arbejde</h1>
-            <p className="home__hero__p">Som partner kan du tilbyde dine services for hele Danmark, og gøre din drøm om at yde freelancearbejde til en realitet.</p>
-            <div className="home__hero__cta">
-                <div className="component__howitworks__container">
-                <svg xmlns="http://www.w3.org/2000/svg" className="component__howitworks__icon" viewBox="0 0 16 16">
-                    <path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393"/>
-                </svg>
-                <p className="component__howitworks__p">Hvordan virker Workflow?</p>
+        <div className="home__hero__container">
+            <div className="home__hero__indhold">
+                <h1 className="home__hero__h1">Tjen penge på dit <span className="home__hero__h1__span">freelance</span> arbejde</h1>
+                <p className="home__hero__p">Som partner kan du tilbyde dine services for hele Danmark, og gøre din drøm om at yde freelancearbejde til en realitet.</p>
+                <div className="home__hero__cta">
+                    <div className="component__howitworks__container">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="component__howitworks__icon" viewBox="0 0 16 16">
+                        <path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393"/>
+                    </svg>
+                    <p className="component__howitworks__p">Hvordan virker Workflow?</p>
+                    </div>
                 </div>
-            </div>
             </div>
             <div className="home__hero__background">
             <Image src={dotWave} className="home__hero__background__image" alt="" width={1200} />
-            </div>
-        </div>
-        <div className="component__info__container">
-            <div className="component__info__indhold">
-            <p className="component__info__topline">For freelancere</p>
-            <h2 className="component__info__heading">Hvad kan jeg med en partnerkonto?</h2>
-            <p className="component__info__p">Hvis du opretter en partnerkonto, kan du få din egen personlige side på Workflow. Upload din portefølje, angiv dine priser, kompetencer og erfaring. Sværere behøver det ikke at være.</p>
-            <p className="component__info__p">Du kan enten vente på, at blive fundet af klienter, som har behov for dine kompetencer, eller udforsk et hav af projekter, og byd ind på dem, som du matcher kompetencerne til.</p>
-            <div className="header__cta__container component__info__cta">
-                <Link href="/opretkonto" className="header__cta__btn__fill component__info__btn__fill">Bliv freelance partner</Link>
-                <Link href="/priser" className="header__cta__btn__transparent">Se priser</Link>
-            </div>
-            </div>
-            <div className="component__info__media">
-            <Image src={stripe} alt="" className="component__info__image" />
             </div>
         </div>
         <div className="type__container">
@@ -63,7 +51,7 @@ export default function Home() {
                         <div className="priser__wrapper__indhold__element__section__header">
                             <p className="priser__wrapper__indhold__element__section__header__tagline">Bliv Workflow Freelance Partner</p>
                             <div className="priser__wrapper__indhold__element__section__header__price">
-                                <p className="priser__wrapper__indhold__element__section__header__heading">{type == "årligt" ? "89" : "169"}</p>
+                                <p className="priser__wrapper__indhold__element__section__header__heading">{type == "årligt" ? globalConfig.abonnement.partner_yearly : globalConfig.abonnement.partner_monthly}</p>
                                 <p className="priser__wrapper__indhold__element__section__header__info">kr./måned</p>
                             </div>
                             <div className="priser__wrapper__indhold__element__section__header__background">
@@ -75,7 +63,7 @@ export default function Home() {
                         <div className="priser__wrapper__indhold__element__section__header priser__wrapper__indhold__element__section__header__secondary">
                             <p className="priser__wrapper__indhold__element__section__header__tagline">Workflow Enterprise Partner</p>
                             <div className="priser__wrapper__indhold__element__section__header__price">
-                                <p className="priser__wrapper__indhold__element__section__header__heading">{type == "årligt" ? "329" : "489"}</p>
+                                <p className="priser__wrapper__indhold__element__section__header__heading">{type == "årligt" ? globalConfig.abonnement.enterprise_yearly : globalConfig.abonnement.enterprise_monthly}</p>
                                 <p className="priser__wrapper__indhold__element__section__header__info">kr./måned</p>
                             </div>
                             <div className="priser__wrapper__indhold__element__section__header__background">
@@ -177,17 +165,38 @@ export default function Home() {
         <div className="component__info__container">
             <div className="component__info__indhold">
             <p className="component__info__topline">For freelancere</p>
+            <h2 className="component__info__heading">Hvad kan jeg med en partnerkonto?</h2>
+            <p className="component__info__p">Hvis du opretter en partnerkonto, kan du få din egen personlige side på Workflow. Upload din portefølje, angiv dine priser, kompetencer og erfaring. Sværere behøver det ikke at være.</p>
+            <p className="component__info__p">Du kan enten vente på, at blive fundet af klienter, som har behov for dine kompetencer, eller udforsk et hav af projekter, og byd ind på dem, som du matcher kompetencerne til.</p>
+            <div className="header__cta__container component__info__cta">
+                <Link href="/opretkonto" className="header__cta__btn__fill component__info__btn__fill">
+                    Bliv freelance partner
+                    <svg xmlns="http://www.w3.org/2000/svg" className="component__info__btn__icon" viewBox="0 0 24 24"><path d="M18,12h0a2,2,0,0,0-.59-1.4l-4.29-4.3a1,1,0,0,0-1.41,0,1,1,0,0,0,0,1.42L15,11H5a1,1,0,0,0,0,2H15l-3.29,3.29a1,1,0,0,0,1.41,1.42l4.29-4.3A2,2,0,0,0,18,12Z"></path></svg>
+                </Link>
+                <Link href="/priser" className="header__cta__btn__transparent"><span>Se priser</span></Link>
+            </div>
+            </div>
+            <div className="component__info__media">
+            <Image src={freelancer} alt="" className="component__info__image" />
+            </div>
+        </div>
+        <div className="component__info__container">
+            <div className="component__info__indhold">
+            <p className="component__info__topline">For freelancere</p>
             <h2 className="component__info__heading">Hvorfor skal jeg købe et abonnement?</h2>
             <p className="component__info__p">Ved at blive Freelance Partner på Workflow, kan du bruge platformen som en markedsføringskanal. Din profil vil blive vist i søgeresultaterne, når folk søger i den branche.</p>
             <p className="component__info__p">Du bliver kun eksponeret for folk, som er i købefasen, og er klar til at hyre en freelancer med netop dine kompetencer.</p>
             <p className="component__info__p">Samtidig kan du altid finde projekter, som du kan byde ind på, hvis du i en periode får færre henvendelser.</p>
             <div className="header__cta__container component__info__cta">
-                <Link href="/opretkonto" className="header__cta__btn__fill component__info__btn__fill">Opret Partner konto</Link>
-                <Link href="/priser" className="header__cta__btn__transparent">Se priser</Link>
+                <Link href="/opretkonto" className="header__cta__btn__fill component__info__btn__fill">
+                    Opret Partner konto
+                    <svg xmlns="http://www.w3.org/2000/svg" className="component__info__btn__icon" viewBox="0 0 24 24"><path d="M18,12h0a2,2,0,0,0-.59-1.4l-4.29-4.3a1,1,0,0,0-1.41,0,1,1,0,0,0,0,1.42L15,11H5a1,1,0,0,0,0,2H15l-3.29,3.29a1,1,0,0,0,1.41,1.42l4.29-4.3A2,2,0,0,0,18,12Z"></path></svg>
+                </Link>
+                <Link href="/priser" className="header__cta__btn__transparent"><span>Se priser</span></Link>
             </div>
             </div>
             <div className="component__info__media">
-            <Image src={stripe} alt="" className="component__info__image" />
+            <Image src={kategori} alt="" className="component__info__image" />
             </div>
         </div>
         </>

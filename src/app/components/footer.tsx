@@ -5,7 +5,7 @@ import Logo from '../assets/workflowlogo.png';
 
 export default function Footer() {
   return (
-    <div className="footer__container">
+    <footer className="footer__container">
         <div className="footer__navigation__container">
             <div className="footer__navigation__element">
                 <p className="footer__navigation__element__heading">Kategorier</p>
@@ -61,8 +61,8 @@ export default function Footer() {
             <Link href="/" className="header__logo__container">
                 <Image src={Logo} width={100} alt="" />
             </Link>
-            <p className="footer__logo__copyright">© 2024 Workflow</p>
+            <p className="footer__logo__copyright">🇩🇰 Based in Denmark</p>
         </div>
-    </div>
+    </footer>
   );
 }

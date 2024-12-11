@@ -2,11 +2,10 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect } from 'react'
-import { useSearchParams } from 'next/navigation'
-import { getFreelanceProfil } from "@/app/lib";
+import { useSearchParams, useRouter } from 'next/navigation'
+import { getFreelanceProfil, opretSamtale, getUser } from "@/app/lib";
 
 import dotWave from '../../assets/dotwave.png';
-import profilBillede from '../../assets/madskaiser.jpg';
 
 type User = {
     freelanceInformation: {
@@ -22,6 +21,14 @@ type User = {
           }[];
           profile__underkategori: string;
           profile__about: string;
+        };
+        freelance__pricing: {
+            pricing__packages: {
+                package__description: string;
+                package__name: string;
+                package__price: number;
+                package__includes: string[]
+            }[];
         };
         freelance__reviews: {
           reviews__rating: number;
@@ -49,26 +56,35 @@ type User = {
         user__email: string;
         user__name: string;
         user__location: string;
+        user__id: string;
     };
+    portfolioInformation: string[]
 };
 
 export default function Freelancer() {
+    const router = useRouter()
     const searchParams  = useSearchParams()
 
     const [loading, setLoading] = useState(true)
 
     const [user, setUser] = useState<User | null>(null)
+    const [freelancer, setFreelancer] = useState<User | null>(null)
+    const [notFound, setNotFound] = useState(false)
 
     async function getFreelancer() {
-        const userId = searchParams.get("id")
-        if (userId) {
-            const userData: any = {...await getFreelanceProfil(userId)}
-            if (userData) {
-                console.log("User:", userData)
-                setUser(userData)
+        const userData: any = {...await getUser()}
+        setUser(userData.clientUserData)
+
+        const freelancerId = searchParams.get("id")
+        if (freelancerId) {
+            const freelancerData: any = {...await getFreelanceProfil(freelancerId)}
+            if (Object.keys(freelancerData).length > 0) {
+                setFreelancer(freelancerData)
                 setLoading(false)
             } else {
                 console.log("Ikke fundet")
+                setLoading(false)
+                setNotFound(true)
             }
         }
     }
@@ -77,70 +93,30 @@ export default function Freelancer() {
         getFreelancer()
     }, [])
 
-    function kontaktfreelancer() {
+    async function kontaktfreelancer() {
         setLoading(true)
 
-        /* const opdaterDatabase = async () => {
-            const profilEmail = JSON.parse(localStorage.getItem("user")).userInformation.user__email
-
-            const velkommenDoc = await addDoc(collection(db, "samtaler"), {
-                samtale__beskeder: [
-                ],
-                samtale__medlemmer: [
-                    email,
-                    profilEmail
-                ],
-                samtale__data: {
-                    data__created: new Date().getTime()
-                }
-            })
-            velkommenDoc
-            router.push("/dashboard/samtaler")
+        if (user) {
+            const samtale = await opretSamtale(user!.userInformation.user__id, freelancer!.userInformation.user__id)
+            if (samtale) {
+                 router.push("/dashboard/samtaler")
+            }
+        } else {
+            router.push("/logind")
         }
-        opdaterDatabase() */
     }
+
+    const [selectedImage, setSelectedImage] = useState(0)
 
     return (
         <div className="profil__container">
             {loading ? <div className="profil__loading__container">
                 <div className="lds-ring"><div></div><div></div><div></div><div></div></div>
             </div> : <>
-                {user && <>
+                {freelancer && <>
                     <div className="profil__hero__container">
                         <div className="priser__hero__indhold">
-                            <div className="search__where__container">
-                                <Link href="/">
-                                    <svg xmlns="http://www.w3.org/2000/svg" data-name="Layer 1" viewBox="0 0 24 24" className="search__where__icon">
-                                        <path d="M22,5.724V2c0-.552-.447-1-1-1s-1,.448-1,1v2.366L14.797,.855c-1.699-1.146-3.895-1.146-5.594,0L2.203,5.579c-1.379,.931-2.203,2.48-2.203,4.145v9.276c0,2.757,2.243,5,5,5h3c.553,0,1-.448,1-1V15c0-.551,.448-1,1-1h4c.552,0,1,.449,1,1v8c0,.552,.447,1,1,1h3c2.757,0,5-2.243,5-5V9.724c0-1.581-.744-3.058-2-4Zm0,13.276c0,1.654-1.346,3-3,3h-2v-7c0-1.654-1.346-3-3-3h-4c-1.654,0-3,1.346-3,3v7h-2c-1.654,0-3-1.346-3-3V9.724c0-.999,.494-1.929,1.322-2.487L10.322,2.513c1.02-.688,2.336-.688,3.355,0l7,4.724c.828,.558,1.322,1.488,1.322,2.487v9.276Z"/>
-                                    </svg>
-                                </Link>
-                                <p className="search__where__divider">»</p>
-                                <Link className="search__where__p" href="/freelance-kategorier">Find freelancer</Link>
-                                <p className="search__where__divider">»</p>
-                                <Link className="search__where__p" href={"/freelance-kategorier/" + user.freelanceInformation.freelance__profile.profile__branche}>{user.freelanceInformation.freelance__profile.profile__branche}</Link>
-                                <p className="search__where__divider">»</p>
-                                <Link className="search__where__p" href={"/freelance-kategorier?kategori=" + user.freelanceInformation.freelance__profile.profile__underkategori}>{user.freelanceInformation.freelance__profile.profile__underkategori}</Link>
-                                <p className="search__where__divider">»</p>
-                                <Link className="search__where__p" href={"/freelancer/profil?id=" + user.freelanceInformation.freelance__url}>{user.userInformation.user__name}</Link>
-                            </div>
                             <div className="profil__tags__container">
-                                <div className="profil__tags__wrapper">
-                                    {user.freelanceInformation.freelance__profile.profile__tags.map((tag) => {
-                                        return (<div key={tag.tag__id} className="profil__tag__container" style={{backgroundColor: tag.tag_color}}>
-                                            {tag.tag__id == "workflowVerified" && <svg xmlns="http://www.w3.org/2000/svg" className="profil__verified__icon" viewBox="0 0 16 16">
-                                                <path d="M10.067.87a2.89 2.89 0 0 0-4.134 0l-.622.638-.89-.011a2.89 2.89 0 0 0-2.924 2.924l.01.89-.636.622a2.89 2.89 0 0 0 0 4.134l.637.622-.011.89a2.89 2.89 0 0 0 2.924 2.924l.89-.01.622.636a2.89 2.89 0 0 0 4.134 0l.622-.637.89.011a2.89 2.89 0 0 0 2.924-2.924l-.01-.89.636-.622a2.89 2.89 0 0 0 0-4.134l-.637-.622.011-.89a2.89 2.89 0 0 0-2.924-2.924l-.89.01zm.287 5.984-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7 8.793l2.646-2.647a.5.5 0 0 1 .708.708"/>
-                                            </svg>}
-                                            {tag.tag__id == "topSeller" && <svg xmlns="http://www.w3.org/2000/svg" className="profil__verified__icon" viewBox="0 0 16 16">
-                                                <path fillRule="evenodd" d="M2 15.5V2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.74.439L8 13.069l-5.26 2.87A.5.5 0 0 1 2 15.5M8.16 4.1a.178.178 0 0 0-.32 0l-.634 1.285a.18.18 0 0 1-.134.098l-1.42.206a.178.178 0 0 0-.098.303L6.58 6.993c.042.041.061.1.051.158L6.39 8.565a.178.178 0 0 0 .258.187l1.27-.668a.18.18 0 0 1 .165 0l1.27.668a.178.178 0 0 0 .257-.187L9.368 7.15a.18.18 0 0 1 .05-.158l1.028-1.001a.178.178 0 0 0-.098-.303l-1.42-.206a.18.18 0 0 1-.134-.098z"/>
-                                            </svg>}
-                                            <p className="profil__verified__heading">{tag.tag__name}</p>
-                                            <div className="profil__tag__popup">
-                                                <div className="profil__tag__popup__arrow"></div>
-                                                <p className="profil__tag__popup__p">{user.userInformation.user__name} {tag.tag__description}</p>
-                                            </div>
-                                        </div>)
-                                    })}
-                                </div>
                                 <div className="profil__cta__container">
                                     <div className="profil__cta__btns">
                                         <svg xmlns="http://www.w3.org/2000/svg" className="profil__cta__btn" viewBox="0 0 16 16">
@@ -151,108 +127,73 @@ export default function Freelancer() {
                                             <path fillRule="evenodd" d="M7.646.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 1.707V10.5a.5.5 0 0 1-1 0V1.707L5.354 3.854a.5.5 0 1 1-.708-.708z"/>
                                         </svg>
                                     </div>
-                                    <div className="component__howitworks__container">
-                                        <svg xmlns="http://www.w3.org/2000/svg" className="component__howitworks__icon" viewBox="0 0 16 16">
-                                            <path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393"/>
-                                        </svg>
-                                        <p className="component__howitworks__p">Hvordan virker Workflow?</p>
-                                    </div>
                                 </div>
                             </div>
-                            <h1 className="profil__h1">{user.freelanceInformation.freelance__overskrift}</h1>
+                            <h1 className="profil__h1">{freelancer.freelanceInformation.freelance__overskrift}</h1>
                             <div className="profil__location__wrapper">
                                 <svg xmlns="http://www.w3.org/2000/svg" className="profil__reviews__icon" viewBox="0 0 16 16">
                                     <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
                                 </svg>
-                                <p className="profil__reviews__p">{user.freelanceInformation.freelance__reviews.reviews__rating} <span>({user.freelanceInformation.freelance__reviews.reviews__data.length})</span></p>
-                            </div>
-                            <div className="salecard__element__indhold__seller">
-                                <div className="salecard__element__indhold__seller__image">
-                                    <Image className="salecard__element__indhold__seller__image__pic" src={profilBillede} alt="" />
-                                </div>
-                                <div className="salecard__element__indhold__seller__indhold">
-                                    <p className="salecard__element__indhold__seller__heading">{user.userInformation.user__name}</p>
-                                    <div className="profil__salecard__tags">
-                                        <div className="profil__location__wrapper">
-                                            <svg xmlns="http://www.w3.org/2000/svg" className="profil__location__icon" viewBox="0 0 16 16">
-                                                <path d="M12.166 8.94c-.524 1.062-1.234 2.12-1.96 3.07A32 32 0 0 1 8 14.58a32 32 0 0 1-2.206-2.57c-.726-.95-1.436-2.008-1.96-3.07C3.304 7.867 3 6.862 3 6a5 5 0 0 1 10 0c0 .862-.305 1.867-.834 2.94M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10"/>
-                                                <path d="M8 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4m0 1a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
-                                            </svg>
-                                            <p className="profil__location__heading">{user.userInformation.user__location}</p>
-                                        </div>
-                                        <div className="profil__location__wrapper">
-                                            <svg xmlns="http://www.w3.org/2000/svg" className="profil__location__icon" viewBox="0 0 16 16">
-                                                <path d="M9.669.864 8 0 6.331.864l-1.858.282-.842 1.68-1.337 1.32L2.6 6l-.306 1.854 1.337 1.32.842 1.68 1.858.282L8 12l1.669-.864 1.858-.282.842-1.68 1.337-1.32L13.4 6l.306-1.854-1.337-1.32-.842-1.68zm1.196 1.193.684 1.365 1.086 1.072L12.387 6l.248 1.506-1.086 1.072-.684 1.365-1.51.229L8 10.874l-1.355-.702-1.51-.229-.684-1.365-1.086-1.072L3.614 6l-.25-1.506 1.087-1.072.684-1.365 1.51-.229L8 1.126l1.356.702z"/>
-                                                <path d="M4 11.794V16l4-1 4 1v-4.206l-2.018.306L8 13.126 6.018 12.1z"/>
-                                            </svg>
-                                            <p className="profil__location__heading">{user.freelanceInformation.freelance__profile.profile__type}</p>
-                                        </div>
-                                    </div>
-                                </div>
+                                <p className="profil__reviews__p">{freelancer.freelanceInformation.freelance__reviews.reviews__rating} <span>({freelancer.freelanceInformation.freelance__reviews.reviews__data.length})</span></p>
                             </div>
                             <div className="salecard__element__indhold__tags__container">
-                                {user.freelanceInformation.freelance__tags.map((tag: string) => {
+                                {freelancer.freelanceInformation.freelance__tags.map((tag: string) => {
                                     return <div key={tag} className="salecard__element__indhold__tags__element">{tag}</div>
                                 })}
                             </div>
                         </div>
-                        <div className="home__hero__background">
+                        {/* <div className="home__hero__background">
                             <Image src={dotWave} className="home__hero__background__image" alt="" width={1200} />
-                        </div>
+                        </div> */}
                     </div>
                     <div className="profil__indhold__container">
                         <div className="profil__content__container">
                             <div className="portfolio__container">
-                                <div className="portfolio__selected"></div>
-                                <div className="portfolio__miniatures__container">
-                                    <div className="portfolio__miniatures__element"></div>
-                                    <div className="portfolio__miniatures__element"></div>
-                                    <div className="portfolio__miniatures__element"></div>
-                                    <div className="portfolio__miniatures__element"></div>
+                                <div className="portfolio__selected">
+                                    <img src={freelancer.freelanceInformation.freelance__portfolio[selectedImage].portfolio__image} className="portfolio__selected__image__img" alt="" />
                                 </div>
+                                <ul className="portfolio__miniatures__container">
+                                    {freelancer.freelanceInformation.freelance__portfolio.map((portfolioCase, portfolioCaseIndex) => {
+                                        return (
+                                            <li key={"portfoliocase-" + portfolioCaseIndex} className={selectedImage == portfolioCaseIndex ? "portfolio__miniatures__element" : "portfolio__miniatures__element portfolio__miniatures__element__off"} onClick={() => setSelectedImage(portfolioCaseIndex)}><img src={portfolioCase.portfolio__image} className="portfolio__selected__image__img" alt="" /></li>
+                                        )
+                                    })}
+                                </ul>
                             </div>
                             <pre className="textsection__container">
                                 <p className="textsection__element__p">
-                                    {user.freelanceInformation.freelance__beskrivelse}
+                                    {freelancer.freelanceInformation.freelance__beskrivelse}
                                 </p>
-                                {/* <div className="textsection__element">
-                                    <p className="textsection__element__h1">Hvad betyder "Ascent" for mig?</p>
-                                    <p className="textsection__element__p">Jeg hjælper virksomheder med at vokse, ikke kun ved at udvikle moderne hjemmesider, men ved udvikle deres brand og genkendelighed. Navnet Ascent, afspejler vores værdier – vi stræber altid efter at blive bedre, både som team og i de løsninger, vi leverer.</p>
-                                </div>
-                                <div className="textsection__element">
-                                    <p className="textsection__element__h1">Jeg sætter ord på Ascent's vision</p>
-                                    <p className="textsection__element__p">Hos Ascent handler min vision om at skabe værdi for mine kunder ved at bygge moderne og brugervenlige hjemmesider, der hjælper dem med at skille sig ud i en digital verden. Jeg tror på, at en hjemmeside er mere end bare et design – det er virksomhedens ansigt udadtil.</p>
-                                </div> */}
                             </pre>
                             <div className="anmeldelser__content">
                                 <div className="anmeldelser__header">
                                     <div className="anmeldelser__header__stats">
                                         <div className="anmeldelser__header__stats__overview">
-                                            <p className="anmeldelser__header__stats__overview__h1">Anmeldelser <span>({user.freelanceInformation.freelance__reviews.reviews__data.length})</span></p>
+                                            <p className="anmeldelser__header__stats__overview__h1">Anmeldelser <span>({freelancer.freelanceInformation.freelance__reviews.reviews__data.length})</span></p>
                                             <div className="anmeldelser__header__stats__overview__heading">
-                                                <p className="anmeldelser__header__stats__overview__heading__h1">{user.freelanceInformation.freelance__reviews.reviews__rating}</p>
+                                                <p className="anmeldelser__header__stats__overview__heading__h1">{freelancer.freelanceInformation.freelance__reviews.reviews__rating}</p>
                                                 <div className="anmeldelser__header__stats__overview__heading__stars">
-                                                    {user.freelanceInformation.freelance__reviews.reviews__rating >= 1 ? <svg xmlns="http://www.w3.org/2000/svg" data-name="Layer 1" viewBox="0 0 16 16" className="anmeldelser__header__stats__overview__heading__stars__element">
+                                                    {freelancer.freelanceInformation.freelance__reviews.reviews__rating >= 1 ? <svg xmlns="http://www.w3.org/2000/svg" data-name="Layer 1" viewBox="0 0 16 16" className="anmeldelser__header__stats__overview__heading__stars__element">
                                                         <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
                                                     </svg> : <svg xmlns="http://www.w3.org/2000/svg" data-name="Layer 1" viewBox="0 0 16 16" className="anmeldelser__header__stats__overview__heading__stars__element">
                                                         <path d="M2.866 14.85c-.078.444.36.791.746.593l4.39-2.256 4.389 2.256c.386.198.824-.149.746-.592l-.83-4.73 3.522-3.356c.33-.314.16-.888-.282-.95l-4.898-.696L8.465.792a.513.513 0 0 0-.927 0L5.354 5.12l-4.898.696c-.441.062-.612.636-.283.95l3.523 3.356-.83 4.73zm4.905-2.767-3.686 1.894.694-3.957a.56.56 0 0 0-.163-.505L1.71 6.745l4.052-.576a.53.53 0 0 0 .393-.288L8 2.223l1.847 3.658a.53.53 0 0 0 .393.288l4.052.575-2.906 2.77a.56.56 0 0 0-.163.506l.694 3.957-3.686-1.894a.5.5 0 0 0-.461 0z"/>
                                                     </svg>}
-                                                    {user.freelanceInformation.freelance__reviews.reviews__rating >= 2 ? <svg xmlns="http://www.w3.org/2000/svg" data-name="Layer 1" viewBox="0 0 16 16" className="anmeldelser__header__stats__overview__heading__stars__element">
+                                                    {freelancer.freelanceInformation.freelance__reviews.reviews__rating >= 2 ? <svg xmlns="http://www.w3.org/2000/svg" data-name="Layer 1" viewBox="0 0 16 16" className="anmeldelser__header__stats__overview__heading__stars__element">
                                                         <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
                                                     </svg> : <svg xmlns="http://www.w3.org/2000/svg" data-name="Layer 1" viewBox="0 0 16 16" className="anmeldelser__header__stats__overview__heading__stars__element">
                                                         <path d="M2.866 14.85c-.078.444.36.791.746.593l4.39-2.256 4.389 2.256c.386.198.824-.149.746-.592l-.83-4.73 3.522-3.356c.33-.314.16-.888-.282-.95l-4.898-.696L8.465.792a.513.513 0 0 0-.927 0L5.354 5.12l-4.898.696c-.441.062-.612.636-.283.95l3.523 3.356-.83 4.73zm4.905-2.767-3.686 1.894.694-3.957a.56.56 0 0 0-.163-.505L1.71 6.745l4.052-.576a.53.53 0 0 0 .393-.288L8 2.223l1.847 3.658a.53.53 0 0 0 .393.288l4.052.575-2.906 2.77a.56.56 0 0 0-.163.506l.694 3.957-3.686-1.894a.5.5 0 0 0-.461 0z"/>
                                                     </svg>}
-                                                    {user.freelanceInformation.freelance__reviews.reviews__rating >= 3 ? <svg xmlns="http://www.w3.org/2000/svg" data-name="Layer 1" viewBox="0 0 16 16" className="anmeldelser__header__stats__overview__heading__stars__element">
+                                                    {freelancer.freelanceInformation.freelance__reviews.reviews__rating >= 3 ? <svg xmlns="http://www.w3.org/2000/svg" data-name="Layer 1" viewBox="0 0 16 16" className="anmeldelser__header__stats__overview__heading__stars__element">
                                                         <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
                                                     </svg> : <svg xmlns="http://www.w3.org/2000/svg" data-name="Layer 1" viewBox="0 0 16 16" className="anmeldelser__header__stats__overview__heading__stars__element">
                                                         <path d="M2.866 14.85c-.078.444.36.791.746.593l4.39-2.256 4.389 2.256c.386.198.824-.149.746-.592l-.83-4.73 3.522-3.356c.33-.314.16-.888-.282-.95l-4.898-.696L8.465.792a.513.513 0 0 0-.927 0L5.354 5.12l-4.898.696c-.441.062-.612.636-.283.95l3.523 3.356-.83 4.73zm4.905-2.767-3.686 1.894.694-3.957a.56.56 0 0 0-.163-.505L1.71 6.745l4.052-.576a.53.53 0 0 0 .393-.288L8 2.223l1.847 3.658a.53.53 0 0 0 .393.288l4.052.575-2.906 2.77a.56.56 0 0 0-.163.506l.694 3.957-3.686-1.894a.5.5 0 0 0-.461 0z"/>
                                                     </svg>}
-                                                    {user.freelanceInformation.freelance__reviews.reviews__rating >= 4 ? <svg xmlns="http://www.w3.org/2000/svg" data-name="Layer 1" viewBox="0 0 16 16" className="anmeldelser__header__stats__overview__heading__stars__element">
+                                                    {freelancer.freelanceInformation.freelance__reviews.reviews__rating >= 4 ? <svg xmlns="http://www.w3.org/2000/svg" data-name="Layer 1" viewBox="0 0 16 16" className="anmeldelser__header__stats__overview__heading__stars__element">
                                                         <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
                                                     </svg> : <svg xmlns="http://www.w3.org/2000/svg" data-name="Layer 1" viewBox="0 0 16 16" className="anmeldelser__header__stats__overview__heading__stars__element">
                                                         <path d="M2.866 14.85c-.078.444.36.791.746.593l4.39-2.256 4.389 2.256c.386.198.824-.149.746-.592l-.83-4.73 3.522-3.356c.33-.314.16-.888-.282-.95l-4.898-.696L8.465.792a.513.513 0 0 0-.927 0L5.354 5.12l-4.898.696c-.441.062-.612.636-.283.95l3.523 3.356-.83 4.73zm4.905-2.767-3.686 1.894.694-3.957a.56.56 0 0 0-.163-.505L1.71 6.745l4.052-.576a.53.53 0 0 0 .393-.288L8 2.223l1.847 3.658a.53.53 0 0 0 .393.288l4.052.575-2.906 2.77a.56.56 0 0 0-.163.506l.694 3.957-3.686-1.894a.5.5 0 0 0-.461 0z"/>
                                                     </svg>}
-                                                    {user.freelanceInformation.freelance__reviews.reviews__rating >= 5 ? <svg xmlns="http://www.w3.org/2000/svg" data-name="Layer 1" viewBox="0 0 16 16" className="anmeldelser__header__stats__overview__heading__stars__element">
+                                                    {freelancer.freelanceInformation.freelance__reviews.reviews__rating >= 5 ? <svg xmlns="http://www.w3.org/2000/svg" data-name="Layer 1" viewBox="0 0 16 16" className="anmeldelser__header__stats__overview__heading__stars__element">
                                                         <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
                                                     </svg> : <svg xmlns="http://www.w3.org/2000/svg" data-name="Layer 1" viewBox="0 0 16 16" className="anmeldelser__header__stats__overview__heading__stars__element">
                                                         <path d="M2.866 14.85c-.078.444.36.791.746.593l4.39-2.256 4.389 2.256c.386.198.824-.149.746-.592l-.83-4.73 3.522-3.356c.33-.314.16-.888-.282-.95l-4.898-.696L8.465.792a.513.513 0 0 0-.927 0L5.354 5.12l-4.898.696c-.441.062-.612.636-.283.95l3.523 3.356-.83 4.73zm4.905-2.767-3.686 1.894.694-3.957a.56.56 0 0 0-.163-.505L1.71 6.745l4.052-.576a.53.53 0 0 0 .393-.288L8 2.223l1.847 3.658a.53.53 0 0 0 .393.288l4.052.575-2.906 2.77a.56.56 0 0 0-.163.506l.694 3.957-3.686-1.894a.5.5 0 0 0-.461 0z"/>
@@ -264,72 +205,175 @@ export default function Freelancer() {
                                             <div className="anmeldelser__header__stats__content__element">
                                                 <p className="anmeldelser__header__stats__content__element__p">5 stjerner</p>
                                                 <div className="anmeldelser__header__stats__content__element__line">
-                                                    <div className="anmeldelser__header__stats__content__element__line__active" style={{width: user.freelanceInformation.freelance__reviews.reviews__5star / user.freelanceInformation.freelance__reviews.reviews__data.length * 100 + "%"}}></div>
+                                                    <div className="anmeldelser__header__stats__content__element__line__active" style={{width: freelancer.freelanceInformation.freelance__reviews.reviews__5star / freelancer.freelanceInformation.freelance__reviews.reviews__data.length * 100 + "%"}}></div>
                                                 </div>
-                                                <p className="anmeldelser__header__stats__content__element__p anmeldelser__header__stats__content__element__p__procent">{user.freelanceInformation.freelance__reviews.reviews__5star / user.freelanceInformation.freelance__reviews.reviews__data.length * 100}%</p>
+                                                <p className="anmeldelser__header__stats__content__element__p anmeldelser__header__stats__content__element__p__procent">{freelancer.freelanceInformation.freelance__reviews.reviews__5star / freelancer.freelanceInformation.freelance__reviews.reviews__data.length * 100}%</p>
                                             </div>
                                             <div className="anmeldelser__header__stats__content__element">
                                                 <p className="anmeldelser__header__stats__content__element__p">4 stjerner</p>
                                                 <div className="anmeldelser__header__stats__content__element__line">
-                                                    <div className="anmeldelser__header__stats__content__element__line__active" style={{width: user.freelanceInformation.freelance__reviews.reviews__4star / user.freelanceInformation.freelance__reviews.reviews__data.length * 100 + "%"}}></div>
+                                                    <div className="anmeldelser__header__stats__content__element__line__active" style={{width: freelancer.freelanceInformation.freelance__reviews.reviews__4star / freelancer.freelanceInformation.freelance__reviews.reviews__data.length * 100 + "%"}}></div>
                                                 </div>
-                                                <p className="anmeldelser__header__stats__content__element__p anmeldelser__header__stats__content__element__p__procent">{user.freelanceInformation.freelance__reviews.reviews__4star / user.freelanceInformation.freelance__reviews.reviews__data.length * 100}%</p>
+                                                <p className="anmeldelser__header__stats__content__element__p anmeldelser__header__stats__content__element__p__procent">{freelancer.freelanceInformation.freelance__reviews.reviews__4star / freelancer.freelanceInformation.freelance__reviews.reviews__data.length * 100}%</p>
                                             </div>
                                             <div className="anmeldelser__header__stats__content__element">
                                                 <p className="anmeldelser__header__stats__content__element__p">3 stjerner</p>
                                                 <div className="anmeldelser__header__stats__content__element__line">
-                                                    <div className="anmeldelser__header__stats__content__element__line__active" style={{width: user.freelanceInformation.freelance__reviews.reviews__3star / user.freelanceInformation.freelance__reviews.reviews__data.length * 100 + "%"}}></div>
+                                                    <div className="anmeldelser__header__stats__content__element__line__active" style={{width: freelancer.freelanceInformation.freelance__reviews.reviews__3star / freelancer.freelanceInformation.freelance__reviews.reviews__data.length * 100 + "%"}}></div>
                                                 </div>
-                                                <p className="anmeldelser__header__stats__content__element__p anmeldelser__header__stats__content__element__p__procent">{user.freelanceInformation.freelance__reviews.reviews__3star / user.freelanceInformation.freelance__reviews.reviews__data.length * 100}%</p>
+                                                <p className="anmeldelser__header__stats__content__element__p anmeldelser__header__stats__content__element__p__procent">{freelancer.freelanceInformation.freelance__reviews.reviews__3star / freelancer.freelanceInformation.freelance__reviews.reviews__data.length * 100}%</p>
                                             </div>
                                             <div className="anmeldelser__header__stats__content__element">
                                                 <p className="anmeldelser__header__stats__content__element__p">2 stjerner</p>
                                                 <div className="anmeldelser__header__stats__content__element__line">
-                                                    <div className="anmeldelser__header__stats__content__element__line__active" style={{width: user.freelanceInformation.freelance__reviews.reviews__2star / user.freelanceInformation.freelance__reviews.reviews__data.length * 100 + "%"}}></div>
+                                                    <div className="anmeldelser__header__stats__content__element__line__active" style={{width: freelancer.freelanceInformation.freelance__reviews.reviews__2star / freelancer.freelanceInformation.freelance__reviews.reviews__data.length * 100 + "%"}}></div>
                                                 </div>
-                                                <p className="anmeldelser__header__stats__content__element__p anmeldelser__header__stats__content__element__p__procent">{user.freelanceInformation.freelance__reviews.reviews__2star / user.freelanceInformation.freelance__reviews.reviews__data.length * 100}%</p>
+                                                <p className="anmeldelser__header__stats__content__element__p anmeldelser__header__stats__content__element__p__procent">{freelancer.freelanceInformation.freelance__reviews.reviews__2star / freelancer.freelanceInformation.freelance__reviews.reviews__data.length * 100}%</p>
                                             </div>
                                             <div className="anmeldelser__header__stats__content__element">
                                                 <p className="anmeldelser__header__stats__content__element__p">1 stjerne</p>
                                                 <div className="anmeldelser__header__stats__content__element__line">
-                                                    <div className="anmeldelser__header__stats__content__element__line__active" style={{width: user.freelanceInformation.freelance__reviews.reviews__1star / user.freelanceInformation.freelance__reviews.reviews__data.length * 100 + "%"}}></div>
+                                                    <div className="anmeldelser__header__stats__content__element__line__active" style={{width: freelancer.freelanceInformation.freelance__reviews.reviews__1star / freelancer.freelanceInformation.freelance__reviews.reviews__data.length * 100 + "%"}}></div>
                                                 </div>
-                                                <p className="anmeldelser__header__stats__content__element__p anmeldelser__header__stats__content__element__p__procent">{user.freelanceInformation.freelance__reviews.reviews__1star / user.freelanceInformation.freelance__reviews.reviews__data.length * 100}%</p>
+                                                <p className="anmeldelser__header__stats__content__element__p anmeldelser__header__stats__content__element__p__procent">{freelancer.freelanceInformation.freelance__reviews.reviews__1star / freelancer.freelanceInformation.freelance__reviews.reviews__data.length * 100}%</p>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        <div className="profil__info__container">
-                            <div className="profil__info__wrapper">
-                                <div className="salecard__element__indhold__seller">
-                                    <div className="salecard__element__indhold__seller__image">
-                                        <Image className="salecard__element__indhold__seller__image__pic" src={profilBillede} alt="" />
-                                    </div>
-                                    <div className="salecard__element__indhold__seller__indhold">
-                                        <p className="salecard__element__indhold__seller__heading">{user.userInformation.user__name}</p>
-                                        <p className="salecard__element__indhold__seller__p">{user.freelanceInformation.freelance__profile.profile__underkategori}</p>
-                                    </div>
-                                </div>
-                                <div className="profil__info__description__container">
-                                    <p className="profil__info__description__heading">Læs om denne freelancer</p>
-                                    <p className="profil__info__description__p">{user.freelanceInformation.freelance__profile.profile__about}</p>
-                                </div>
-                                <div className="profil__info__description__container profil__info__bulletpoints">
-                                    <p className="profil__info__description__heading">Mød din freelancer</p>
-                                    <p className="profil__info__description__p"><span>Lokation: </span>{user.userInformation.user__location}</p>
-                                    <p className="profil__info__description__p"><span>Timepris: </span></p>
-                                    <p className="profil__info__description__p"><span>Erfaring: </span>{user.freelanceInformation.freelance__erfaring.erfaring__tid}</p>
-                                </div>
+                            <div className="abonnement__cards__container">
+                                {freelancer.freelanceInformation.freelance__pricing.pricing__packages.map((pricePackage, pricePackageIndex) => {
+                                    return (<li key={"package-" + pricePackageIndex} className="opretkonto__priser__element">
+                                        <p className="opretkonto__priser__element__h1">{pricePackage.package__name}</p>
+                                        <p className="opretkonto__priser__element__h2">Denne pakke tilbydes af {freelancer.userInformation.user__name}</p>
+                                        <div className="opretkonto__priser__element__price">
+                                            <p className="opretkonto__priser__element__price__h1">DKK</p>
+                                            <p className="opretkonto__priser__element__price__input">{pricePackage.package__price}</p>
+                                        </div>
+                                        <div className="question__cta__container">
+                                            <button className="abonnement__cta__btn__outline" onClick={() => {}}>
+                                                Vælg pakke
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="login__cta__main__icon" viewBox="0 0 24 24">
+                                                    <path d="M18,12h0a2,2,0,0,0-.59-1.4l-4.29-4.3a1,1,0,0,0-1.41,0,1,1,0,0,0,0,1.42L15,11H5a1,1,0,0,0,0,2H15l-3.29,3.29a1,1,0,0,0,1.41,1.42l4.29-4.3A2,2,0,0,0,18,12Z"/>
+                                                </svg>
+                                            </button>
+                                        </div>
+                                        <div className="welcome__selection__container">
+                                            <p className="logind__form__element__heading">Inkluderet</p>
+                                            <div className="welcome__dropdown__element__container">
+                                                <ul className="welcome__list__ul">
+                                                    {pricePackage.package__includes.map((inkluderet, inkluderetIndex) => {
+                                                        return (<li key={"inkluderet-" + inkluderetIndex} className="welcome__list__li">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" className="welcome__list__li__svg">
+                                                                <path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425z"/>
+                                                            </svg>
+                                                            <p className="welcome__list__li__p">{inkluderet}</p>
+                                                        </li>)
+                                                    })}
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </li>)
+                                })}
                             </div>
-                            <div className="profil__info__cta">
-                                <button className="profil__info__cta__btn" onClick={() => kontaktfreelancer()}>{loading ? <div className="loader"></div> : "Kontakt Freelancer"}</button>
-                                <button className="profil__info__cta__btn profil__info__cta__btn__outline">Se website</button>
+                        </div>
+                        <div className="profil__sidebar__container">
+                            <div className="freelancer__sidebar__container">
+                                <div className="freelancer__sidebar__banner">
+                                    <div className="freelancer__sidebar__banner__profilepicture">
+                                        <img className="freelancer__sidebar__banner__profilepicture__image" src={freelancer.userInformation.user__picture.picture__url} alt="" />
+                                    </div>
+                                </div>
+                                <div className="freelancer__sidebar__info__container">
+                                    <div className="freelance__sidebar__tags__wrapper">
+                                        {freelancer.freelanceInformation.freelance__profile.profile__tags.map((tag) => {
+                                            return (<div key={tag.tag__id} className="profil__tag__container" style={{backgroundColor: tag.tag_color}}>
+                                                {tag.tag__id == "workflowVerified" && <svg xmlns="http://www.w3.org/2000/svg" className="profil__verified__icon" viewBox="0 0 16 16">
+                                                    <path d="M10.067.87a2.89 2.89 0 0 0-4.134 0l-.622.638-.89-.011a2.89 2.89 0 0 0-2.924 2.924l.01.89-.636.622a2.89 2.89 0 0 0 0 4.134l.637.622-.011.89a2.89 2.89 0 0 0 2.924 2.924l.89-.01.622.636a2.89 2.89 0 0 0 4.134 0l.622-.637.89.011a2.89 2.89 0 0 0 2.924-2.924l-.01-.89.636-.622a2.89 2.89 0 0 0 0-4.134l-.637-.622.011-.89a2.89 2.89 0 0 0-2.924-2.924l-.89.01zm.287 5.984-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7 8.793l2.646-2.647a.5.5 0 0 1 .708.708"/>
+                                                </svg>}
+                                                {tag.tag__id == "topSeller" && <svg xmlns="http://www.w3.org/2000/svg" className="profil__verified__icon" viewBox="0 0 16 16">
+                                                    <path fillRule="evenodd" d="M2 15.5V2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.74.439L8 13.069l-5.26 2.87A.5.5 0 0 1 2 15.5M8.16 4.1a.178.178 0 0 0-.32 0l-.634 1.285a.18.18 0 0 1-.134.098l-1.42.206a.178.178 0 0 0-.098.303L6.58 6.993c.042.041.061.1.051.158L6.39 8.565a.178.178 0 0 0 .258.187l1.27-.668a.18.18 0 0 1 .165 0l1.27.668a.178.178 0 0 0 .257-.187L9.368 7.15a.18.18 0 0 1 .05-.158l1.028-1.001a.178.178 0 0 0-.098-.303l-1.42-.206a.18.18 0 0 1-.134-.098z"/>
+                                                </svg>}
+                                                <p className="profil__verified__heading">{tag.tag__name}</p>
+                                                <div className="profil__tag__popup">
+                                                    <div className="profil__tag__popup__arrow"></div>
+                                                    <p className="profil__tag__popup__p">{freelancer.userInformation.user__name} {tag.tag__description}</p>
+                                                </div>
+                                            </div>)
+                                        })}
+                                    </div>
+                                    <div className="freelancer__sidebar__info__hero">
+                                        <p className="freelancer__sidebar__info__hero__heading">{freelancer.userInformation.user__name}</p>
+                                        <p className="freelancer__sidebar__info__hero__location">{freelancer.userInformation.user__location} &#183; {freelancer.freelanceInformation.freelance__profile.profile__type}</p>
+                                        <p className="freelancer__sidebar__info__hero__oneliner">{freelancer.freelanceInformation.freelance__profile.profile__about}</p>
+                                    </div>
+                                    <div className="freelancer__sidebar__info__highlights">
+                                        <div className="freelancer__sidebar__info__highlights__element">
+                                            <div className="freelancer__sidebar__info__highlights__element__main">
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="freelancer__sidebar__info__highlights__element__main__icon" viewBox="0 0 24 24">
+                                                    <path d="M12,0A12,12,0,1,0,24,12,12.013,12.013,0,0,0,12,0Zm0,22A10,10,0,1,1,22,12,10.011,10.011,0,0,1,12,22Z"/><path d="M12,0A12,12,0,1,0,24,12,12.013,12.013,0,0,0,12,0Zm0,21a9,9,0,1,1,9-9A9.01,9.01,0,0,1,12,21Z"/><path d="M10.5,11.055l-2.4,1.5a1.5,1.5,0,0,0-.475,2.068h0a1.5,1.5,0,0,0,2.068.475l2.869-1.8a2,2,0,0,0,.938-1.7V7.772a1.5,1.5,0,0,0-1.5-1.5h0a1.5,1.5,0,0,0-1.5,1.5Z"/>
+                                                </svg>
+                                                <p className="freelancer__sidebar__info__highlights__element__main__p">5 min</p>
+                                            </div>
+                                            <p className="freelancer__sidebar__info__highlights__element__p">Gns. svartid</p>
+                                        </div>
+                                        <div className="freelancer__sidebar__info__highlights__element freelancer__sidebar__info__highlights__element__middle">
+                                            <div className="freelancer__sidebar__info__highlights__element__main">
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="freelancer__sidebar__info__highlights__element__main__icon" viewBox="0 0 24 24">
+                                                    <path d="M21.557,7.153L15.318,.964C14.547,.232,13.5-.105,12.447,.03L5.821,.905c-.821,.109-1.399,.862-1.291,1.684,.108,.822,.867,1.402,1.684,1.291l6.626-.875c.15-.02,.301,.028,.388,.112l6.201,6.152c.757,.773,.756,2.03,.007,2.793l-.512,.512c-.113-.145-.236-.285-.367-.419l-6.238-6.189c-.771-.732-1.819-1.07-2.871-.935l-6.626,.875c-.701,.093-1.242,.663-1.299,1.368l-.511,6.396c-.086,1.059,.307,2.086,1.054,2.795l6.086,6.035c.947,.967,2.214,1.5,3.567,1.501h.005c1.352,0,2.617-.53,3.564-1.494l3.278-3.333c.927-.944,1.401-2.178,1.421-3.421l1.579-1.579c1.896-1.929,1.898-5.072-.01-7.02Zm-5.13,9.917l-3.277,3.333c-.379,.386-.887,.598-1.428,.598-.542,0-1.049-.214-1.442-.616l-6.124-6.072c-.109-.104-.166-.25-.153-.402l.414-5.189,5.424-.716c.148-.024,.301,.028,.388,.112l6.201,6.152c.757,.773,.756,2.03-.002,2.802Zm-7.427-5.57c-.034,1.972-2.967,1.971-3,0,.034-1.972,2.967-1.971,3,0Z"/>
+                                                </svg>
+                                                <p className="freelancer__sidebar__info__highlights__element__main__p">6500 kr.</p>
+                                            </div>
+                                            <p className="freelancer__sidebar__info__highlights__element__p">Gns. pris</p>
+                                        </div>
+                                        <div className="freelancer__sidebar__info__highlights__element">
+                                            <div className="freelancer__sidebar__info__highlights__element__main">
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="freelancer__sidebar__info__highlights__element__main__icon" viewBox="0 0 24 24">
+                                                    <path d="m20.697,14.025c-1.32-1.319-3.621-1.322-4.945-.005l-.411.404c-2.586-1.199-4.48-3.101-5.754-5.777l.388-.395c.661-.661,1.025-1.54,1.025-2.475s-.364-1.814-.986-2.436l-2.152-2.317c-1.309-1.309-3.583-1.326-4.908-.041,0,0-1.067.93-1.092.954C.662,3.138,0,4.758,0,6.5c0,7.523,9.977,17.5,17.5,17.5,1.743,0,3.363-.662,4.562-1.863.024-.024.954-1.091.954-1.091,1.323-1.367,1.309-3.557-.082-4.946l-2.237-2.074Zm.156,4.941c-.024.024-.948,1.083-.948,1.083-.629.613-1.481.95-2.405.95-5.51,0-14.5-8.101-14.5-14.5,0-.924.337-1.776.95-2.405,0,0,1.06-.924,1.084-.948.127-.128.276-.146.353-.146s.226.019.314.106l2.152,2.317c.127.128.146.276.146.354,0,.077-.019.226-.155.362l-1.108,1.126c-.418.425-.545,1.058-.323,1.61,1.694,4.221,4.632,7.153,8.732,8.719.55.21,1.169.079,1.587-.332,0,0,1.133-1.114,1.136-1.117.127-.128.276-.146.353-.146s.226.019.394.186l2.237,2.074c.195.195.195.512,0,.707Zm-6.559-14.473c-.267-.226-.364-.594-.243-.922.12-.328.432-.546.782-.546h2.501l.885-2.483c.121-.326.433-.542.781-.542s.66.216.781.542l.885,2.483h2.501c.35,0,.663.219.783.548.12.329.022.698-.246.923l-1.971,1.606.815,2.484c.112.336-.002.706-.282.922-.281.216-.667.231-.964.038l-2.295-1.495-2.257,1.51c-.14.094-.302.141-.464.141-.176,0-.352-.056-.5-.166-.283-.212-.401-.58-.295-.917l.784-2.513-1.981-1.612Z"/>
+                                                </svg>
+                                                <p className="freelancer__sidebar__info__highlights__element__main__p">84</p>
+                                            </div>
+                                            <p className="freelancer__sidebar__info__highlights__element__p">Henvendelser</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                {/* <div className="profil__info__description__container profil__info__bulletpoints">
+                                    <p className="profil__info__description__heading">Mød din freelancer</p>
+                                    <p className="profil__info__description__p"><span>Lokation: </span>{freelancer.userInformation.user__location}</p>
+                                    <p className="profil__info__description__p"><span>Erfaring: </span>{freelancer.freelanceInformation.freelance__erfaring.erfaring__tid}</p>
+                                </div> */}
+                                <div className="freelancer__sidebar__cta__container">
+                                    <button className="freelancer__sidebar__cta__btn__fill" onClick={() => kontaktfreelancer()}>
+                                        {loading ? <div className="loader"></div> : "Kontakt Freelancer"}
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="freelancer__sidebar__cta__icon" viewBox="0 0 24 24">
+                                            <path d="M18,12h0a2,2,0,0,0-.59-1.4l-4.29-4.3a1,1,0,0,0-1.41,0,1,1,0,0,0,0,1.42L15,11H5a1,1,0,0,0,0,2H15l-3.29,3.29a1,1,0,0,0,1.41,1.42l4.29-4.3A2,2,0,0,0,18,12Z"/>
+                                        </svg>
+                                    </button>
+                                    <button className="freelancer__sidebar__cta__btn__fill freelancer__sidebar__cta__btn__transparent">
+                                        <p className="freelancer__sidebar__cta__btn__transparent__text">Sammenlign pakker</p>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </>}
+                {notFound && <div className="home__hero__container">
+                    <div className="home__hero__indhold">
+                        <h1 className="home__hero__h1"><span className="home__hero__h1__span">404</span> - Freelancer ikke fundet...</h1>
+                        <p className="home__hero__p">Freelanceren du søger efter findes ikke. Prøv igen, eller kontakt os for mere information.</p>
+                        <div className="home__hero__cta">
+                            <div className="component__howitworks__container">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="component__howitworks__icon" viewBox="0 0 16 16">
+                                <path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393"/>
+                            </svg>
+                            <p className="component__howitworks__p">Hvordan virker Workflow?</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="home__hero__background">
+                        <Image src={dotWave} className="home__hero__background__image" alt="" width={1200} />
+                    </div>
+                </div>}
             </>}
         </div>
     );

@@ -1,23 +1,28 @@
 "use client"
 import Link from "next/link";
 import Image from "next/image";
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from "next/navigation";
+
+import { getAnalytics, logEvent } from "firebase/analytics";
+import { app } from "./firebase/config";
 
 import dotWave from './assets/dotwave.png';
 import stripe from './assets/stripe.png';
+import kategori from './assets/Workflow/kategori.jpg';
+import freelancer from './assets/Workflow/Freelancer.jpg';
+import { getKategorier } from "./assets/lister/lister";
 
 export default function Home() {
+  useEffect(() => {
+    const analytics = getAnalytics(app)
+  }, [])
+
   const router = useRouter()
 
   const [type, setType] = useState("klient");
-  const [searchBranche, setSearchBranche] = useState("")
 
-  function search() {
-    if (searchBranche !== "") {
-      router.push("/freelance-kategorier/webbureau?kategori=" + searchBranche.toLocaleLowerCase().replace(" ", "-"))
-    }
-  }
+  const [searchedBranche, setSearchedBranche] = useState(getKategorier())
   
   return (
     <>
@@ -25,19 +30,37 @@ export default function Home() {
         <div className="home__hero__indhold">
           <h1 className="home__hero__h1">Find den <span className="home__hero__h1__span">freelancer</span>, der passer bedst til dit projekt</h1>
           <p className="home__hero__p">Workflow forbinder danske virksomheder med de rette freelancere, så idéer kan blive til virkelighed.</p>
-          <form onSubmit={() => search()} className="home__hero__input__container">
-            <select className="home__hero__input__select" onChange={(e) => setSearchBranche(e.target.value)}>
-                <option value="">Vælg branche...</option>
-                <option value="Shopify Udvikler">Shopify Udvikler</option>
-                <option value="Wordpress Udvikler">Wordpress Udvikler</option>
-                <option value="Webflow Udvikler">Webflow Udvikler</option>
-            </select>
-            <div className="home__hero__input__btn" onClick={() => search()}>
+          <div className="home__hero__input__container">
+            <input className="home__hero__input" onFocus={() => {
+                document.getElementById("wrapper-dropdown")?.classList.add("welcome__dropdown__element__dropdown__wrapper__active")
+            }} autoComplete={"off"} id={"main-dropdown"} placeholder={"Søg i brancher"} onChange={(e) => {
+                const searchedDupli = []
+                
+                getKategorier().forEach((listItem) => {
+                    if (listItem.navn.toLowerCase().includes(e.target.value.toLowerCase())) {
+                        searchedDupli.push(listItem)
+                    }
+                })
+                setSearchedBranche(searchedDupli)
+            }} />
+            {/* <svg xmlns="http://www.w3.org/2000/svg" className="home__hero__input__icon" viewBox="0 0 16 16">
+                <path fillRule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708"/>
+            </svg> */}
+            <div className="home__hero__input__dropdown" id={"wrapper-dropdown"}>
+                {searchedBranche.map((item, itemIndex) => {
+                    return (<button className="welcome__dropdown__element__dropdown__wrapper__element" key={"search-" + itemIndex} onClick={() => {
+                        router.push("/freelance-kategorier/" + item.navn.replace(" ", "-"))
+                    }}>
+                        <p className="welcome__dropdown__element__dropdown__wrapper__element__p">{item.navn}</p>
+                    </button>);
+                })}
+            </div>
+            <div className="home__hero__input__btn">
               <svg xmlns="http://www.w3.org/2000/svg" className="home__hero__input__icon" viewBox="0 0 16 16">
                 <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
               </svg>
             </div>
-          </form>
+          </div>
           <div className="home__hero__cta">
             <div className="component__howitworks__container">
               <svg xmlns="http://www.w3.org/2000/svg" className="component__howitworks__icon" viewBox="0 0 16 16">
@@ -69,12 +92,15 @@ export default function Home() {
             <p className="component__info__p">Workflow er for dig, som er træt af at bruge uendelige timer på at lede i junglen af freelancere. Vi gør det nemt  og hurtigt at  finde den freelancer, som matcher dine krav bedst.</p>
             <p className="component__info__p">Søg i mere end 50 kategorier, og filtrer efter lokation, erfaring, pris, anmeldelser og meget mere.</p>
             <div className="header__cta__container component__info__cta">
-              <Link href="/freelance-kategorier" className="header__cta__btn__fill component__info__btn__fill">Find en freelancer</Link>
-              <Link href="/opretkonto" className="header__cta__btn__transparent">Opret konto</Link>
+              <Link href="/freelance-kategorier" className="header__cta__btn__fill component__info__btn__fill">
+                Find en freelancer
+                <svg xmlns="http://www.w3.org/2000/svg" className="component__info__btn__icon" viewBox="0 0 24 24"><path d="M18,12h0a2,2,0,0,0-.59-1.4l-4.29-4.3a1,1,0,0,0-1.41,0,1,1,0,0,0,0,1.42L15,11H5a1,1,0,0,0,0,2H15l-3.29,3.29a1,1,0,0,0,1.41,1.42l4.29-4.3A2,2,0,0,0,18,12Z"></path></svg>
+              </Link>
+              <Link href="/opretkonto" className="header__cta__btn__transparent"><span>Opret konto</span></Link>
             </div>
           </div>
           <div className="component__info__media">
-            <Image src={stripe} alt="" className="component__info__image" />
+            <Image src={kategori} alt="" className="component__info__image" />
           </div>
         </div>
         <div className="component__slider__container">
@@ -202,12 +228,15 @@ export default function Home() {
             <p className="component__info__p">Hos Workflow kan du oprette en projektannonce, hvor du beskriver dit projekt, krav, behov og mangler.</p>
             <p className="component__info__p">Så vil freelancere, der matcher dine kriterier byde ind på projektet, og du kan derefter selv sortere og udvælge dit bedste match.</p>
             <div className="header__cta__container component__info__cta">
-              <Link href="#" className="header__cta__btn__fill component__info__btn__fill">Opret en projektannonce</Link>
-              <Link href="/opretkonto" className="header__cta__btn__transparent">Opret konto</Link>
+              <Link href="#" className="header__cta__btn__fill component__info__btn__fill">
+                Opret en projektannonce
+                <svg xmlns="http://www.w3.org/2000/svg" className="component__info__btn__icon" viewBox="0 0 24 24"><path d="M18,12h0a2,2,0,0,0-.59-1.4l-4.29-4.3a1,1,0,0,0-1.41,0,1,1,0,0,0,0,1.42L15,11H5a1,1,0,0,0,0,2H15l-3.29,3.29a1,1,0,0,0,1.41,1.42l4.29-4.3A2,2,0,0,0,18,12Z"></path></svg>
+              </Link>
+              <Link href="/opretkonto" className="header__cta__btn__transparent"><span>Opret konto</span></Link>
             </div>
           </div>
           <div className="component__info__media">
-            <Image src={stripe} alt="" className="component__info__image" />
+            <Image src={freelancer} alt="" className="component__info__image" />
           </div>
         </div>
       </>}
@@ -219,12 +248,15 @@ export default function Home() {
             <p className="component__info__p">Workflow er for dig, som søger at drive din freelance-forretning på en nem og enkel måde.</p>
             <p className="component__info__p">Tilmeld dig og bliv eksponeret for målgrupper, der søger netop de kvalificeringer som du besidder. Upload dit arbejde, information om dine services og indsaml anmeldelser direkte fra platformen.</p>
             <div className="header__cta__container component__info__cta">
-              <Link href="/bliv-partner" className="header__cta__btn__fill component__info__btn__fill">Bliv freelance partner</Link>
-              <Link href="/priser" className="header__cta__btn__transparent">Se priser</Link>
+              <Link href="/bliv-partner" className="header__cta__btn__fill component__info__btn__fill">
+                Bliv freelance partner
+                <svg xmlns="http://www.w3.org/2000/svg" className="component__info__btn__icon" viewBox="0 0 24 24"><path d="M18,12h0a2,2,0,0,0-.59-1.4l-4.29-4.3a1,1,0,0,0-1.41,0,1,1,0,0,0,0,1.42L15,11H5a1,1,0,0,0,0,2H15l-3.29,3.29a1,1,0,0,0,1.41,1.42l4.29-4.3A2,2,0,0,0,18,12Z"></path></svg>
+              </Link>
+              <Link href="/priser" className="header__cta__btn__transparent"><span>Se priser</span></Link>
             </div>
           </div>
           <div className="component__info__media">
-            <Image src={stripe} alt="" className="component__info__image" />
+            <Image src={freelancer} alt="" className="component__info__image" />
           </div>
         </div>
         <div className="component__slider__container">
@@ -352,12 +384,15 @@ export default function Home() {
             <p className="component__info__p">Iværksættere og virksomheder kan selv oprette en projektannonce hos Workflow. Her kan du som freelancere filtrere efter projekter, som matcher dine kompetencer.</p>
             <p className="component__info__p">Byd ind på projekter, og forklar, hvorfor klienten skal vælge dig. Derved opnår du mere arbejde, så du selv kan administrere mængden.</p>
             <div className="header__cta__container component__info__cta">
-              <Link href="/bliv-partner" className="header__cta__btn__fill component__info__btn__fill">Bliv freelance partner</Link>
-              <Link href="/priser" className="header__cta__btn__transparent">Se priser</Link>
+              <Link href="/bliv-partner" className="header__cta__btn__fill component__info__btn__fill">
+                Bliv freelance partner
+                <svg xmlns="http://www.w3.org/2000/svg" className="component__info__btn__icon" viewBox="0 0 24 24"><path d="M18,12h0a2,2,0,0,0-.59-1.4l-4.29-4.3a1,1,0,0,0-1.41,0,1,1,0,0,0,0,1.42L15,11H5a1,1,0,0,0,0,2H15l-3.29,3.29a1,1,0,0,0,1.41,1.42l4.29-4.3A2,2,0,0,0,18,12Z"></path></svg>
+              </Link>
+              <Link href="/priser" className="header__cta__btn__transparent"><span>Se priser</span></Link>
             </div>
           </div>
           <div className="component__info__media">
-            <Image src={stripe} alt="" className="component__info__image" />
+            <Image src={freelancer} alt="" className="component__info__image" />
           </div>
         </div>
       </>}

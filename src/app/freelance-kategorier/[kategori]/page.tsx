@@ -36,31 +36,40 @@ type SelectedFilter = {
 
 type Freelancer = {
     freelanceInformation: {
-      freelance__url: string;
-      freelance__profile: {
-        profile__branche: string;
-        profile__type: string;
-        profile__tags: {
-          tag__id: string;
-          tag_color: string;
-          tag__name: string;
-          tag__description: string;
-        }[];
-      };
-      freelance__reviews: {
-        reviews__rating: number;
-        reviews__data: { length: number };
-      };
-      freelance__overskrift: string;
-      freelance__erfaring: {
-        erfaring__tid: string;
-      };
+        freelance__url: string;
+        freelance__profile: {
+            profile__branche: string;
+            profile__type: string;
+            profile__tags: {
+                tag__id: string;
+                tag_color: string;
+                tag__name: string;
+                tag__description: string;
+            }[];
+        };
+        freelance__reviews: {
+            reviews__rating: number;
+            reviews__data: { length: number };
+        };
+        freelance__overskrift: string;
+        freelance__erfaring: {
+            erfaring__tid: string;
+        };
+        freelance__pricing: {
+            pricing__packages: {
+                package__name: string;
+                package__description: string;
+                package__price: number;
+                package__includes: string[];
+            }[]
+        };
     };
     userInformation: {
       user__email: string;
       user__name: string;
       user__location: string;
     };
+    portfolioInformation: string[];
 };
 
 type FilterItem = {
@@ -88,6 +97,7 @@ export default function Home() {
             const freelancere: any = await getFreelancers(currentKategori.toLowerCase(), filters)
             if (freelancere.length > 0) {
                 setFreelancers(freelancere)
+                console.log(freelancere)
                 setLoading(false)
             } else {
                 setLoading(false)
@@ -286,7 +296,7 @@ export default function Home() {
                             </svg>
                         </Link>
                         <p className="search__where__divider">»</p>
-                        <Link className="search__where__p" href="/freelance-kategorier">Find freelancer</Link>
+                        <Link className="search__where__p" href="/freelance-kategorier">Freelance kategorier</Link>
                         <p className="search__where__divider">»</p>
                         <Link className="search__where__p" href={"/freelance-kategorier/" + currentKategori}>{currentKategori}</Link>
                     </div>
@@ -369,7 +379,7 @@ export default function Home() {
                                         })}
                                     </div>
                                     <div className="filter__dropdown__cta">
-                                        <button className="header__cta__btn__transparent filter__dropdown__cta__secondary" onClick={() => removeSelected(filter.filter__navn, filter_index)}>Fjern alt</button>
+                                        <button className="header__cta__btn__transparent filter__dropdown__cta__secondary" onClick={() => removeSelected(filter.filter__navn, filter_index)}><span>Fjern alt</span></button>
                                         <button className="header__cta__btn__fill" onClick={() => anvendFilters(filter.filter__navn, filter_index)}>Anvend</button>
                                     </div>
                                 </div>
@@ -390,21 +400,88 @@ export default function Home() {
                             )
                         })}
                     </div>
-                    <p className="filter__overblik__resultater">{freelancers.length >= 2 || freelancers.length == 0 ? freelancers.length + " Freelancere matcher" : freelancers.length + " Freelancer matcher"}</p>
+                    {/* <p className="filter__overblik__resultater">{freelancers.length >= 2 || freelancers.length == 0 ? freelancers.length + " Freelancere matcher" : freelancers.length + " Freelancer matcher"}</p> */}
                 </div>
-                {loading ? <div className="filter__loading__container">
-                    <div className="lds-ring"><div></div><div></div><div></div><div></div></div>
+                {loading ? <div className="salecard__section">
+                    <div className="salecard__section__element">
+                        <div className="salecard__element__image__container">
+                            <div className="salecard__element__image__img" />
+                        </div>
+                        <div className="salecard__element__indhold">
+                            <div className="salecard__element__indhold__seller__container">
+                                <div className="salecard__element__indhold__seller__wrapper">
+                                    <div className="salecard__element__indhold__seller__image">
+                                        <div className="salecard__element__indhold__seller__image__pic" />
+                                    </div>
+                                    <div className="salecard__element__indhold__seller__indhold">
+                                        <div className="salecard__element__indhold__seller__heading__skeleton"></div>
+                                        <div className="salecard__element__indhold__seller__p__skeleton"></div>
+                                    </div>
+                                </div>
+                                <div className="salecard__element__indhold__seller__reviews__skeleton">
+                                </div>
+                            </div>
+                            <div className="salecard__element__indhold__heading__skeleton"></div>
+                            <div className="salecard__element__indhold__p__skeleton"></div>
+                        </div>
+                    </div>
+                    <div className="salecard__section__element">
+                        <div className="salecard__element__image__container">
+                            <div className="salecard__element__image__img" />
+                        </div>
+                        <div className="salecard__element__indhold">
+                            <div className="salecard__element__indhold__seller__container">
+                                <div className="salecard__element__indhold__seller__wrapper">
+                                    <div className="salecard__element__indhold__seller__image">
+                                        <div className="salecard__element__indhold__seller__image__pic" />
+                                    </div>
+                                    <div className="salecard__element__indhold__seller__indhold">
+                                        <div className="salecard__element__indhold__seller__heading__skeleton"></div>
+                                        <div className="salecard__element__indhold__seller__p__skeleton"></div>
+                                    </div>
+                                </div>
+                                <div className="salecard__element__indhold__seller__reviews__skeleton">
+                                </div>
+                            </div>
+                            <div className="salecard__element__indhold__heading__skeleton"></div>
+                            <div className="salecard__element__indhold__p__skeleton"></div>
+                        </div>
+                    </div>
+                    <div className="salecard__section__element">
+                        <div className="salecard__element__image__container">
+                            <div className="salecard__element__image__img" />
+                        </div>
+                        <div className="salecard__element__indhold">
+                            <div className="salecard__element__indhold__seller__container">
+                                <div className="salecard__element__indhold__seller__wrapper">
+                                    <div className="salecard__element__indhold__seller__image">
+                                        <div className="salecard__element__indhold__seller__image__pic" />
+                                    </div>
+                                    <div className="salecard__element__indhold__seller__indhold">
+                                        <div className="salecard__element__indhold__seller__heading__skeleton"></div>
+                                        <div className="salecard__element__indhold__seller__p__skeleton"></div>
+                                    </div>
+                                </div>
+                                <div className="salecard__element__indhold__seller__reviews__skeleton">
+                                </div>
+                            </div>
+                            <div className="salecard__element__indhold__heading__skeleton"></div>
+                            <div className="salecard__element__indhold__p__skeleton"></div>
+                        </div>
+                    </div>
                 </div> : <>
                     {freelancers.length > 0 ? <div className="salecard__section">
                         {freelancers.map((freelancer) => {
                             return (
                                 <Link href={"/freelancer/profil?id=" + freelancer.freelanceInformation.freelance__url} className="salecard__section__element" key={freelancer.userInformation.user__email}>
-                                    <div className="salecard__element__image__container"></div>
+                                    <div className="salecard__element__image__container">
+                                        <img src={freelancer.freelanceInformation.freelance__portfolio[0].portfolio__image} className="salecard__element__image__img" />
+                                    </div>
                                     <div className="salecard__element__indhold">
                                         <div className="salecard__element__indhold__seller__container">
                                             <div className="salecard__element__indhold__seller__wrapper">
                                                 <div className="salecard__element__indhold__seller__image">
-                                                    <Image className="salecard__element__indhold__seller__image__pic" src={profilBillede} alt="" />
+                                                    <img className="salecard__element__indhold__seller__image__pic" src={freelancer.userInformation.user__picture.picture__url} alt="" />
                                                 </div>
                                                 <div className="salecard__element__indhold__seller__indhold">
                                                     <p className="salecard__element__indhold__seller__heading">{freelancer.userInformation.user__name}</p>
@@ -419,7 +496,7 @@ export default function Home() {
                                             </div>
                                         </div>
                                         <p className="salecard__element__indhold__heading">{freelancer.freelanceInformation.freelance__overskrift}</p>
-                                        <p className="salecard__element__indhold__p">{freelancer.freelanceInformation.freelance__erfaring.erfaring__tid} - {freelancer.freelanceInformation.freelance__profile.profile__type} - {freelancer.userInformation.user__location}</p>
+                                        <p className="salecard__element__indhold__p">{freelancer.freelanceInformation.freelance__erfaring.erfaring__tid} &#183; {freelancer.freelanceInformation.freelance__profile.profile__type} &#183; {freelancer.userInformation.user__location}</p>
                                         <div className="profil__tags__wrapper">
                                             {freelancer.freelanceInformation.freelance__profile.profile__tags.map((tag) => {
                                                 return (<div key={tag.tag__id} className="profil__tag__container" style={{backgroundColor: tag.tag_color}}>
